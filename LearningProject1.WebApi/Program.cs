@@ -52,6 +52,11 @@ app.UseExceptionHandler(errorApp =>
             context.Response.StatusCode = 400;
             await context.Response.WriteAsync(exception.Message);
         }
+        else if (exception is NotFoundException)
+        {
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync(exception.Message);
+        }
         else
         {
             context.Response.StatusCode = 500;
