@@ -1,4 +1,4 @@
-# LearningProject1
+# LearningProject
 
 LearningProject1 is a simple ASP.NET Core Web API project created for learning backend development.
 
