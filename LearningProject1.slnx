@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LearningProject1.Core/LearningProject1.Core.csproj" Id="e34c2312-916d-43a5-8444-5d1ddc41a29f" />
+  <Project Path="LearningProject1.DataLayer/LearningProject1.DataLayer.csproj" Id="fa225921-ed7d-4496-85d2-d4759ee74184" />
+  <Project Path="LearningProject1.WebApi/LearningProject1.WebApi.csproj" Id="9afa68a3-2644-4bb3-9a0a-2d9bd34c6011" />
+</Solution>
