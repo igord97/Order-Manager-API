@@ -22,7 +22,7 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{orderId}")]
     public async Task<ActionResult<OrderResponseDto>> GetById(int orderId, CancellationToken ct)
     {
         var order = await _orderService.GetOrderByIdAsync(orderId, ct);
@@ -45,6 +45,6 @@ public class OrdersController : ControllerBase
     {
         var createdOrder = await _orderService.CreateOrderAsync(orderRequestDto, ct);
 
-        return CreatedAtAction(nameof(GetById), new { id = createdOrder.Id}, createdOrder);
+        return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id}, createdOrder);
     }
 }

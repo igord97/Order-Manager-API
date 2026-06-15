@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
     public async Task<List<User>> GetAllAsync(CancellationToken ct)
     {
         return await _context.Users
-            .OrderBy(user => user.Name)
+            .OrderBy(user => user.Id)
             .Include(user => user.Orders)
             .ToListAsync(ct);
     }

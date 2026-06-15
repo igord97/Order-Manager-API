@@ -54,8 +54,6 @@ public class OrderService : IOrderService
 
     public async Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto orderRequestDto, CancellationToken ct)
     {
-
-
         if (string.IsNullOrWhiteSpace(orderRequestDto.Product))
         {
             _logger.LogWarning("Product is required.");
@@ -70,7 +68,11 @@ public class OrderService : IOrderService
             throw new BadRequestException("UserId must belong to an existing user.");
         }
 
+        var total = orderRequestDto.Quantity * orderRequestDto.Price;
+
         var order = OrderMapper.ToEntity(orderRequestDto);
+
+        order.Total = total;
 
         var createdOrder = await _orderRepository.AddAsync(order, ct);
 

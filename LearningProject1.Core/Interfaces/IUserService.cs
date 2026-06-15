@@ -11,7 +11,7 @@ public interface IUserService
     Task<List<UserResponseDto>> GetByNameAsync(string name, CancellationToken ct);
     Task<List<string>> GetAllNamesAsync(CancellationToken ct);
     Task<List<UserResponseDto>> SearchUsersAsync(string search, int page, int pageSize, CancellationToken ct);
-    Task<UserResponseDto?> UpdateUserAsync(int id, UserRequestDto updateUserDto, CancellationToken ct);
+    Task<UpdateUserResponseDto> UpdateUserAsync(int id, UserRequestDto updateUserDto, CancellationToken ct);
     Task DeleteUserAsync(int id, CancellationToken ct);
 }
     

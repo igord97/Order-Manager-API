@@ -99,7 +99,7 @@ public class UserService : IUserService
         return users.Select(UserMapper.ToResponseDto).ToList();
     }
 
-    public async Task<UserResponseDto?> UpdateUserAsync(int id, UserRequestDto userRequestDto, CancellationToken ct)
+    public async Task<UpdateUserResponseDto> UpdateUserAsync(int id, UserRequestDto userRequestDto, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAsync(id, ct);
         if (user == null)
@@ -114,7 +114,7 @@ public class UserService : IUserService
 
         _logger.LogInformation("User with id {UserId} updated successfully", updatedUser.Id);
 
-        return UserMapper.ToResponseDto(updatedUser);
+        return UserMapper.ToUpdateResponseDto(updatedUser);
     }
 
     public async Task DeleteUserAsync(int id, CancellationToken ct)

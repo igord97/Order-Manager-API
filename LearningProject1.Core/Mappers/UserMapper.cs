@@ -27,4 +27,16 @@ public class UserMapper
                 .ToList()
         };
     }
+
+
+
+    public static UpdateUserResponseDto ToUpdateResponseDto(User user)
+    {
+        return new UpdateUserResponseDto
+        {
+            UserId = user.Id,
+            UserName = user.Name,
+            UserEmail = user.Email
+        };
+    }
 }

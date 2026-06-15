@@ -24,7 +24,7 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{userId}")]
     public async Task<ActionResult<UserResponseDto>> GetById(int userId, CancellationToken ct)
     {
         var user = await _userService.GetUserByIdAsync(userId, ct);
@@ -34,10 +34,10 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet("email/{email}")]
-    public async Task<ActionResult<UserResponseDto>> GetByEmail(string email, CancellationToken ct)
+    [HttpGet("email/{userEmail}")]
+    public async Task<ActionResult<UserResponseDto>> GetByEmail(string userEmail, CancellationToken ct)
     {
-        var user = await _userService.GetByEmailAsync(email, ct);
+        var user = await _userService.GetByEmailAsync(userEmail, ct);
 
         if (user == null)
             return NotFound();
@@ -45,7 +45,7 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet("name/{name}")]
+    [HttpGet("name/{userName}")]
     public async Task<ActionResult<List<UserResponseDto>>> GetByName(string userName, CancellationToken ct)
     {
         var users = await _userService.GetByNameAsync(userName, ct);
@@ -75,17 +75,17 @@ public class UsersController : ControllerBase
     {
         var createdUser = await _userService.CreateUserAsync(userRequestDto, ct);
 
-        return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
+        return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
     }
 
-    [HttpPut("{id}")]
-    public async Task<ActionResult<UserResponseDto>> UpdateUser(int userId, [FromBody] UserRequestDto userRequestDto, CancellationToken ct)
+    [HttpPut("{userId}")]
+    public async Task<ActionResult<UpdateUserResponseDto>> UpdateUser(int userId, [FromBody] UserRequestDto userRequestDto, CancellationToken ct)
     {
         var updatedUser = await _userService.UpdateUserAsync(userId, userRequestDto, ct);
         return Ok(updatedUser);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{userId}")]
     public async Task<IActionResult> DeleteUser(int userId, CancellationToken ct)
     {
         await _userService.DeleteUserAsync(userId, ct);
