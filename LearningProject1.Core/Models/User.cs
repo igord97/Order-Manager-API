@@ -17,6 +17,13 @@ public class User
     [MaxLength(100)]
     public string Email { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(100)]
+    public string PasswordHash { get; set; } = string.Empty;
+
+    [Required]
+    public string Role { get; set; } = "User";
+
     public List<Order> Orders { get; set; } = new();
 
     public DateTime CreatedAt { get; set; }

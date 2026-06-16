@@ -16,7 +16,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User> AddAsync(User user, CancellationToken ct)
     {
-        _context.Users.Add(user);
+        await _context.Users.AddAsync(user, ct);
         await _context.SaveChangesAsync(ct);
 
         return user;

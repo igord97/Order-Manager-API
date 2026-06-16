@@ -16,6 +16,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<OrderResponseDto>> GetAll(CancellationToken ct)
     {
         var orders = await _orderService.GetAllOrdersAsync(ct);
