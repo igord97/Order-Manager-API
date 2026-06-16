@@ -18,6 +18,27 @@ public class OrdersController : ControllerBase
         _orderService = orderService;
     }
 
+    [HttpPost]
+    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<OrderResponseDto>> CreateOrder([FromBody] OrderRequestDto orderRequestDto, CancellationToken ct)
+    {
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+                return Unauthorized();
+
+            orderRequestDto.UserId = userId;
+        }
+
+        var createdOrder = await _orderService.CreateOrderAsync(orderRequestDto, ct); // would be better to have DTO for specific user
+
+        return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id }, createdOrder);
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
@@ -76,27 +97,6 @@ public class OrdersController : ControllerBase
     {
         var orders = await _orderService.GetOrdersByUserIdAsync(userId, ct);
         return Ok(orders);
-    }
-
-    [HttpPost]
-    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<OrderResponseDto>> CreateOrder([FromBody] OrderRequestDto orderRequestDto, CancellationToken ct)
-    {
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin)
-        {
-            if (!TryGetCurrentUserId(out var userId))
-                return Unauthorized();
-
-            orderRequestDto.UserId = userId;
-        }
-
-        var createdOrder = await _orderService.CreateOrderAsync(orderRequestDto, ct); // would be better to have DTO for specific user
-
-        return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id }, createdOrder);
     }
 
     [HttpPut("{orderId}")]

@@ -2,7 +2,6 @@
 using LearningProject1.Core.Exceptions;
 using LearningProject1.Core.Interfaces;
 using LearningProject1.Core.Mappers;
-using LearningProject1.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace LearningProject1.Core.Services;
