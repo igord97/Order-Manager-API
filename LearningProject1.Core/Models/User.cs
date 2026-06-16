@@ -17,6 +17,9 @@ public class User
     [MaxLength(100)]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
     public List<Order> Orders { get; set; } = new();
+
+    public DateTime CreatedAt { get; set; }
+    
+    public DateTime? UpdatedAt { get; set; }
 }

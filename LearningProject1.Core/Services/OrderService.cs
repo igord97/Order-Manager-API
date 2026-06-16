@@ -27,6 +27,15 @@ public class OrderService : IOrderService
             throw new BadRequestException("Product is required.");
         }
 
+        if (orderRequestDto.Price <= 0)
+        {
+            _logger.LogWarning(
+                "Order creation failed because price was invalid: {Price}",
+                orderRequestDto.Price);
+
+            throw new BadRequestException("Price must be greater than zero.");
+        }
+
         var user = await _userRepository.GetByIdAsync(orderRequestDto.UserId, ct);
 
         if (user is null)

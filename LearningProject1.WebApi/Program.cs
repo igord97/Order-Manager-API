@@ -18,7 +18,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("TestDb"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -55,6 +56,11 @@ app.UseExceptionHandler(errorApp =>
         else if (exception is NotFoundException)
         {
             context.Response.StatusCode = 404;
+            await context.Response.WriteAsync(exception.Message);
+        }
+        else if (exception is ConflictException)
+        {
+            context.Response.StatusCode = 409;
             await context.Response.WriteAsync(exception.Message);
         }
         else
