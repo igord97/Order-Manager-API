@@ -1,11 +1,9 @@
 using System.Text;
 using LearningProject1.WebApi.Middleware;
 using LearningProject1.Core.Interfaces;
-using LearningProject1.Core.Exceptions;
 using LearningProject1.Core.Services;
 using LearningProject1.DataLayer.Data;
 using LearningProject1.DataLayer.Repositories;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -16,9 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -94,42 +89,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapOpenApi();
 }
 
-// Global error handling middleware
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-
-        if (exception is BadRequestException)
-        {
-            context.Response.StatusCode = 400;
-            await context.Response.WriteAsync(exception.Message);
-        }
-        else if (exception is NotFoundException)
-        {
-            context.Response.StatusCode = 404;
-            await context.Response.WriteAsync(exception.Message);
-        }
-        else if (exception is ConflictException)
-        {
-            context.Response.StatusCode = 409;
-            await context.Response.WriteAsync(exception.Message);
-        }
-        else
-        {
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("Internal server error");
-        }
-    });
-});
-
-app.UseMiddleware<RequestLoggingMiddleware>();
-
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
