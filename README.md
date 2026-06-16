@@ -2,7 +2,7 @@
 
 LearningProject1 is an ASP.NET Core Web API project created for learning backend development with a focus on production-style backend practices.
 
-The project demonstrates a layered architecture using Controllers, Services, Repositories, DTOs, Entity Framework Core, SQL Server, Dependency Injection, Swagger, custom middleware, global exception handling, and EF Core migrations.
+The project demonstrates a layered architecture using Controllers, Services, Repositories, DTOs, Entity Framework Core, SQL Server, Dependency Injection, Swagger, custom middleware, global exception handling, EF Core migrations, JWT authentication, role-based authorization, password hashing, and Swagger JWT bearer token support.
 
 ## Project Structure
 
@@ -13,6 +13,20 @@ LearningProject1.WebApi
 LearningProject1.Core
 LearningProject1.DataLayer
 ```
+
+## Completed Recent Improvements
+
+Recently completed authentication and authorization improvements:
+
+* Added JWT authentication
+* Added password hashing
+* Added AuthController
+* Added Register and Login endpoints
+* Protected order endpoints with authorization
+* Read the current user from JWT claims
+* Removed UserId from regular order creation requests after authentication was implemented
+* Added Swagger support for JWT bearer tokens
+
 
 ## Architecture
 
@@ -134,6 +148,8 @@ Fields:
 * Id
 * Name
 * Email
+* PasswordHash
+* Role
 * Orders
 * CreatedAt
 * UpdatedAt
@@ -143,6 +159,8 @@ Rules:
 * Name is required and limited to 50 characters.
 * Email is required and limited to 100 characters.
 * Email must be unique.
+* Passwords are hashed before being stored.
+* A user can have one role, such as User or Admin.
 * A user can have many orders.
 
 ### Order
@@ -196,6 +214,16 @@ Examples:
 * UserRequestDto
 * UserResponseDto
 * UpdateUserResponseDto
+
+### Auth DTOs
+
+Examples:
+
+* RegisterRequestDto
+* LoginRequestDto
+* AuthResponseDto
+
+Auth DTOs are used for registration, login, and returning JWT tokens after successful authentication.
 
 ### Order DTOs
 
@@ -324,6 +352,8 @@ When the application is running, Swagger can be opened at:
 
 Swagger allows testing endpoints directly from the browser.
 
+Swagger is also configured to support JWT bearer authentication. After logging in and receiving a token, the token can be added through the Swagger Authorize button and used to test protected endpoints.
+
 Swagger/OpenAPI packages belong in the WebApi project.
 
 ## Configuration
@@ -334,6 +364,7 @@ Example configuration values:
 
 * SQL Server connection string
 * Logging settings
+* JWT issuer, audience, and secret key
 * Application-specific values
 
 Configuration is read in Program.cs.
@@ -433,7 +464,21 @@ The __EFMigrationsHistory table is created by Entity Framework Core and stores i
 
 ## API Behavior
 
-The API currently supports user and order management.
+The API currently supports authentication, user management, and order management.
+
+### Authentication
+
+Authentication is implemented using JWT bearer tokens.
+
+Supported operations include:
+
+* Register a new user
+* Login with email and password
+* Return a JWT token after successful login
+* Use JWT claims to identify the current user
+* Use roles to protect admin-only endpoints
+
+Passwords are not stored as plain text. Password hashing is used before saving user credentials.
 
 ### Users
 
@@ -452,6 +497,8 @@ User email is normalized before saving.
 
 Duplicate emails are rejected with a conflict response.
 
+User endpoints are protected with authentication and authorization. Admin-only endpoints are restricted with role-based authorization, while regular users can only access or update their own profile where applicable.
+
 ### Orders
 
 Supported operations include:
@@ -459,9 +506,16 @@ Supported operations include:
 * Get all orders
 * Get order by id
 * Get orders by user id
+* Get current user's orders
 * Create order
 * Update order
 * Delete order
+
+Order endpoints are protected with authorization.
+
+Admins can access and manage all orders. Regular users can access and manage only their own orders.
+
+When a regular user creates an order, the UserId is read from JWT claims instead of being trusted from the request body.
 
 Order total is calculated by the backend:
 
@@ -491,21 +545,13 @@ This project demonstrates:
 * Global exception handling
 * Custom middleware
 * Swagger/OpenAPI
+* JWT authentication
+* Password hashing
+* Register and login endpoints
+* Role-based authorization
+* JWT claims usage
+* Swagger JWT bearer token testing
 * Clean separation of concerns
 * Async/await usage
 * CancellationToken usage
 * Basic production-style backend practices
-
-## Next Learning Goals
-
-Planned next steps:
-
-* Add JWT authentication
-* Add password hashing
-* Add AuthController
-* Add Register and Login endpoints
-* Protect order endpoints with authorization
-* Read the current user from JWT claims
-* Remove UserId from order creation requests after authentication is implemented
-* Add Swagger support for JWT bearer tokens
-* Add integration tests
