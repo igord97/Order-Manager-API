@@ -11,6 +11,7 @@ public class LoginRequest
     public string Email { get; set; } = string.Empty;
 
     [Required]
+    [DefaultValue("")]
     [MaxLength(100)]
     public string Password { get; set; } = string.Empty;
 }
