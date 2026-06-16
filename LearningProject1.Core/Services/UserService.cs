@@ -23,7 +23,7 @@ public class UserService : IUserService
         return users.Select(UserMapper.ToResponseDto).ToList();
     }
 
-    public async Task<UserResponseDto?> GetUserByIdAsync(int id, CancellationToken ct)
+    public async Task<UserResponseDto> GetUserByIdAsync(int id, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAsync(id, ct);
         if (user == null)
@@ -37,15 +37,20 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto> CreateUserAsync(UserRequestDto userRequestDto, CancellationToken ct)
     {
+        var normalizedEmail = userRequestDto.Email.Trim().ToLowerInvariant();
+        var normalizedName = userRequestDto.Name.Trim();
+
         _logger.LogInformation("Trying to create user with email {Email}", userRequestDto.Email);
 
-        if (await _userRepository.EmailExistsAsync(userRequestDto.Email, ct))
+        if (await _userRepository.EmailExistsAsync(normalizedEmail, ct))
         {
-            _logger.LogWarning("User with email {Email} already exists", userRequestDto.Email);
-            throw new BadRequestException("Email already exists");
+            _logger.LogWarning("User with email {Email} already exists", normalizedEmail);
+            throw new ConflictException("Email already exists");
         }
 
         var user = UserMapper.ToEntity(userRequestDto);
+        user.Email = normalizedEmail;
+        user.Name = normalizedName;
 
         var createdUser = await _userRepository.AddAsync(user, ct);
 
@@ -58,47 +63,6 @@ public class UserService : IUserService
         return UserMapper.ToResponseDto(createdUser);
     }
 
-    public async Task<UserResponseDto?> GetByEmailAsync(string email, CancellationToken ct)
-    {
-        var user = await _userRepository.GetByEmailAsync(email, ct);
-        if (user is null)
-        {
-            _logger.LogWarning("User with email {Email} was not found", email);
-            throw new NotFoundException("User not found");
-        }
-
-        return UserMapper.ToResponseDto(user);
-    }
-
-    public async Task<List<UserResponseDto>> GetByNameAsync(string name, CancellationToken ct)
-    {
-        var users = await _userRepository.GetByNameAsync(name, ct);
-        if (users is null || users.Count == 0)
-        {
-            _logger.LogWarning("No users found with name {Name}", name);
-            throw new NotFoundException("Users not found");
-        }
-
-        return users.Select(UserMapper.ToResponseDto).ToList();
-    }
-
-    public async Task<List<string>> GetAllNamesAsync(CancellationToken ct)
-    {
-        return await _userRepository.GetAllNamesAsync(ct);
-    }
-
-    public async Task<List<UserResponseDto>> SearchUsersAsync(string search, int page, int pageSize, CancellationToken ct)
-    {
-        var users = await _userRepository.SearchUsersAsync(search, page, pageSize, ct);
-        if (users is null || users.Count == 0)
-        {
-            _logger.LogWarning("No users found matching search criteria {Search}", search);
-            throw new NotFoundException("Users not found");
-        }
-    
-        return users.Select(UserMapper.ToResponseDto).ToList();
-    }
-
     public async Task<UpdateUserResponseDto> UpdateUserAsync(int id, UserRequestDto userRequestDto, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAsync(id, ct);
@@ -108,9 +72,18 @@ public class UserService : IUserService
             throw new NotFoundException("User not found");
         }
 
-        var toUpdateUser = UserMapper.ToEntity(userRequestDto);
+        var normalizedEmail = userRequestDto.Email.Trim().ToLowerInvariant();
 
-        var updatedUser = await _userRepository.UpdateAsync(toUpdateUser, ct);
+        if (user.Email != normalizedEmail && await _userRepository.EmailExistsAsync(normalizedEmail, ct))
+        {
+            _logger.LogWarning("Cannot update user. Email {Email} already exists", normalizedEmail);
+            throw new ConflictException("Email already exists");
+        }
+
+        user.Name = userRequestDto.Name.Trim();
+        user.Email = normalizedEmail;
+
+        var updatedUser = await _userRepository.UpdateAsync(user, ct);
 
         _logger.LogInformation("User with id {UserId} updated successfully", updatedUser.Id);
 
@@ -130,5 +103,46 @@ public class UserService : IUserService
 
         await _userRepository.DeleteAsync(user, ct);
         _logger.LogInformation("User with id {UserId} deleted successfully", id);
+    }
+
+    public async Task<UserResponseDto> GetByEmailAsync(string email, CancellationToken ct)
+    {
+        var user = await _userRepository.GetByEmailAsync(email, ct);
+        if (user is null)
+        {
+            _logger.LogWarning("User with email {Email} was not found", email);
+            throw new NotFoundException("User not found");
+        }
+
+        return UserMapper.ToResponseDto(user);
+    }
+
+    public async Task<List<UserResponseDto>> GetByNameAsync(string name, CancellationToken ct)
+    {
+        var users = await _userRepository.GetByNameAsync(name, ct);
+
+        return users.Select(UserMapper.ToResponseDto).ToList();
+    }
+
+    public async Task<List<string>> GetAllNamesAsync(CancellationToken ct)
+    {
+        return await _userRepository.GetAllNamesAsync(ct);
+    }
+
+    public async Task<List<UserResponseDto>> SearchUsersAsync(string search, int page, int pageSize, CancellationToken ct)
+    {
+        if (page < 1)
+        {
+            throw new BadRequestException("Page must be greater than zero.");
+        }
+
+        if (pageSize < 1 || pageSize > 100)
+        {
+            throw new BadRequestException("PageSize must be between 1 and 100.");
+        }
+
+        var users = await _userRepository.SearchUsersAsync(search, page, pageSize, ct);
+    
+        return users.Select(UserMapper.ToResponseDto).ToList();
     }
 }
