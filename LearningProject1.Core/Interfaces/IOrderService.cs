@@ -8,4 +8,6 @@ public interface IOrderService
     Task<OrderResponseDto> GetOrderByIdAsync(int orderId, CancellationToken ct);
     Task<List<OrderResponseDto>> GetOrdersByUserIdAsync(int userId, CancellationToken ct);
     Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto createOrderDto, CancellationToken ct);
+    Task<OrderResponseDto> UpdateOrderAsync(int orderId, UpdateOrderRequestDto orderRequestDto, CancellationToken ct);
+    Task<bool> DeleteOrderAsync(int orderId, CancellationToken ct);
 }

@@ -3,21 +3,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LearningProject1.Core.DTOs.Order;
 
-public class OrderRequestDto
+public class UpdateOrderRequestDto
 {
-    [DefaultValue(1)]
-    [Required]
-    public int UserId { get; set; } = 1;
-    
     [Required]
     [DefaultValue("product")]
     [MaxLength(100)]
     public string Product { get; set; } = string.Empty;
 
-    [DefaultValue(9.99)]
-    public decimal Price { get; set; } = 9.99m;
+    public decimal Price { get; set; }
 
     [DefaultValue(1)]
     [Range(1, int.MaxValue)]
-    public int Quantity { get; set; } = 1;
+    public int Quantity { get; set; }
 }

@@ -14,6 +14,14 @@ public class OrderRepository : IOrderRepository
         _context = context;
     }
 
+    public async Task<Order> AddAsync(Order order, CancellationToken ct)
+    {
+        await _context.Orders.AddAsync(order, ct);
+        await _context.SaveChangesAsync(ct);
+
+        return order;
+    }
+
     public async Task<List<Order>> GetAllAsync(CancellationToken ct)
     {
         return await _context.Orders.ToListAsync(ct);
@@ -31,11 +39,18 @@ public class OrderRepository : IOrderRepository
             .ToListAsync(ct);
     }
 
-    public async Task<Order> AddAsync(Order order, CancellationToken ct)
+    public async Task<Order> UpdateAsync(Order order, CancellationToken ct)
     {
-        await _context.Orders.AddAsync(order, ct);
+        _context.Orders.Update(order);
         await _context.SaveChangesAsync(ct);
-        
+
         return order;
+    }
+
+    public async Task<bool> DeleteAsync(Order order, CancellationToken ct)
+    {
+        _context.Orders.Remove(order);
+        await _context.SaveChangesAsync(ct);
+        return true;
     }
 }

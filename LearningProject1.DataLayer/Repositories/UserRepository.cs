@@ -14,6 +14,14 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
+    public async Task<User> AddAsync(User user, CancellationToken ct)
+    {
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync(ct);
+
+        return user;
+    }
+
     public async Task<List<User>> GetAllAsync(CancellationToken ct)
     {
         return await _context.Users
@@ -27,19 +35,6 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.Orders)
             .FirstOrDefaultAsync(u => u.Id == id, ct);
-    }
-
-    public async Task<bool> EmailExistsAsync(string email, CancellationToken ct)
-    {
-        return await _context.Users.AnyAsync(u => u.Email == email, ct);
-    }
-
-    public async Task<User> AddAsync(User user, CancellationToken ct)
-    {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync(ct);
-        
-        return user;
     }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken ct)
@@ -57,11 +52,23 @@ public class UserRepository : IUserRepository
             .ToListAsync(ct);
     }
 
+    public async Task<bool> EmailExistsAsync(string email, CancellationToken ct)
+    {
+        return await _context.Users.AnyAsync(u => u.Email == email, ct);
+    }
+
     public async Task<List<string>> GetAllNamesAsync(CancellationToken ct)
     {
         return await _context.Users
             .Select(u => u.Name)
             .ToListAsync(ct);
+    }
+
+    public async Task<User?> GetByIdWithOrdersAsync(int id, CancellationToken ct)
+    {
+        return await _context.Users
+            .Include(u => u.Orders)
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
     }
 
     public async Task<List<User>> SearchUsersAsync(
@@ -92,12 +99,5 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync(ct);
         
         return true;
-    }
-
-    public async Task<User?> GetByIdWithOrdersAsync(int id, CancellationToken ct)
-    {
-        return await _context.Users
-            .Include(u => u.Orders)
-            .FirstOrDefaultAsync(u => u.Id == id, ct);
     }
 }

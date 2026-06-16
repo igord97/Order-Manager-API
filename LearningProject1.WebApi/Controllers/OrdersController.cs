@@ -45,6 +45,28 @@ public class OrdersController : ControllerBase
     {
         var createdOrder = await _orderService.CreateOrderAsync(orderRequestDto, ct);
 
-        return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id}, createdOrder);
+        return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id }, createdOrder);
+    }
+
+    [HttpPut("{orderId}")]
+    public async Task<ActionResult<OrderResponseDto>> UpdateOrder(int orderId, [FromBody] UpdateOrderRequestDto orderRequestDto, CancellationToken ct)
+    {
+        var updatedOrder = await _orderService.UpdateOrderAsync(orderId, orderRequestDto, ct);
+
+        if (updatedOrder == null)
+            return NotFound();
+
+        return Ok(updatedOrder);
+    }
+
+    [HttpDelete("{orderId}")]
+    public async Task<IActionResult> DeleteOrder(int orderId, CancellationToken ct)
+    {
+        var deleted = await _orderService.DeleteOrderAsync(orderId, ct);
+
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
     }
 }

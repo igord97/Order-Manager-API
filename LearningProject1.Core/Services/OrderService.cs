@@ -1,7 +1,8 @@
-﻿using LearningProject1.Core.Interfaces;
-using LearningProject1.Core.DTOs.Order;
+﻿using LearningProject1.Core.DTOs.Order;
 using LearningProject1.Core.Exceptions;
+using LearningProject1.Core.Interfaces;
 using LearningProject1.Core.Mappers;
+using LearningProject1.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace LearningProject1.Core.Services;
@@ -21,6 +22,8 @@ public class OrderService : IOrderService
 
     public async Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto orderRequestDto, CancellationToken ct)
     {
+        _logger.LogInformation("Creating order for user {UserId}", orderRequestDto.UserId);
+
         if (string.IsNullOrWhiteSpace(orderRequestDto.Product))
         {
             _logger.LogWarning("Product is required.");
@@ -59,12 +62,16 @@ public class OrderService : IOrderService
 
     public async Task<List<OrderResponseDto>> GetAllOrdersAsync(CancellationToken ct)
     {
+        _logger.LogInformation("Getting all orders");
+
         var orders = await _orderRepository.GetAllAsync(ct);
         return orders.Select(OrderMapper.ToResponseDto).ToList();
     }
 
     public async Task<OrderResponseDto> GetOrderByIdAsync(int orderId, CancellationToken ct)
     {
+        _logger.LogInformation("Getting order with id {OrderId}", orderId);
+
         var order = await _orderRepository.GetByIdAsync(orderId, ct);
         if (order is null)
         {
@@ -78,6 +85,8 @@ public class OrderService : IOrderService
 
     public async Task<List<OrderResponseDto>> GetOrdersByUserIdAsync(int userId, CancellationToken ct)
     {
+        _logger.LogInformation("Getting orders from user with id {UserId}", userId);
+
         var user = await _userRepository.GetByIdAsync(userId, ct);
 
         if (user is null)
@@ -88,5 +97,61 @@ public class OrderService : IOrderService
 
         var orders = await _orderRepository.GetByUserIdAsync(userId, ct);
         return orders.Select(OrderMapper.ToResponseDto).ToList();
+    }
+
+    public async Task<OrderResponseDto> UpdateOrderAsync(int orderId, UpdateOrderRequestDto updateOrderRequest, CancellationToken ct)
+    {
+        _logger.LogInformation("Trying to update order with id {OrderId}", orderId);
+
+        var existingOrder = await _orderRepository.GetByIdAsync(orderId, ct);
+
+        if (existingOrder is null)
+        {
+            _logger.LogWarning("Order with id {OrderId} was not found", orderId);
+            throw new NotFoundException("Order with this ID not found");
+        }
+
+        if (string.IsNullOrWhiteSpace(updateOrderRequest.Product))
+        {
+            _logger.LogWarning("Order update failed because product was empty.");
+            throw new BadRequestException("Product is required.");
+        }
+
+        if (updateOrderRequest.Price <= 0)
+        {
+            _logger.LogWarning(
+                "Order update failed because price was invalid: {Price}",
+                updateOrderRequest.Price);
+
+            throw new BadRequestException("Price must be greater than zero.");
+        }
+
+        existingOrder.Product = updateOrderRequest.Product.Trim();
+        existingOrder.Price = updateOrderRequest.Price;
+        existingOrder.Quantity = updateOrderRequest.Quantity;
+        existingOrder.Total = updateOrderRequest.Quantity * updateOrderRequest.Price;
+
+        var updatedOrder = await _orderRepository.UpdateAsync(existingOrder, ct);
+
+        _logger.LogInformation("Order with id {OrderId} updated successfully", orderId);
+        return OrderMapper.ToResponseDto(updatedOrder);
+    }
+
+    public async Task<bool> DeleteOrderAsync(int orderId, CancellationToken ct)
+    {
+        _logger.LogInformation("Trying to delete order with id {OrderId}", orderId);
+
+        var existingOrder = await _orderRepository.GetByIdAsync(orderId, ct);
+
+        if (existingOrder is null)
+        {
+            _logger.LogWarning("Order with id {OrderId} was not found", orderId);
+            return false;
+        }
+
+        await _orderRepository.DeleteAsync(existingOrder, ct);
+
+        _logger.LogInformation("Order with id {OrderId} deleted successfully", orderId);
+        return true;
     }
 }

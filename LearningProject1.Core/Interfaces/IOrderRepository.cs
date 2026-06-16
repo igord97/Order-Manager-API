@@ -8,4 +8,6 @@ public interface IOrderRepository
     Task<Order?> GetByIdAsync(int id, CancellationToken ct);
     Task<List<Order>> GetByUserIdAsync(int userId, CancellationToken ct);
     Task<Order> AddAsync(Order order, CancellationToken ct);
+    Task<Order> UpdateAsync(Order order, CancellationToken ct);
+    Task<bool> DeleteAsync(Order order, CancellationToken ct);
 }
