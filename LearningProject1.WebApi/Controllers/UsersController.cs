@@ -18,6 +18,17 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
+    [AllowAnonymous]
+    [HttpPost]
+    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserResponseDto>> CreateUser([FromBody] UserRequestDto userRequestDto, CancellationToken ct)
+    {
+        var createdUser = await _userService.CreateUserAsync(userRequestDto, ct);
+
+        return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UserResponseDto>), StatusCodes.Status200OK)]
@@ -117,17 +128,6 @@ public class UsersController : ControllerBase
         var users = await _userService.SearchUsersAsync(search, page, pageSize, ct);
 
         return Ok(users);
-    }
-
-    [AllowAnonymous]
-    [HttpPost]
-    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserResponseDto>> CreateUser([FromBody] UserRequestDto userRequestDto, CancellationToken ct)
-    {
-        var createdUser = await _userService.CreateUserAsync(userRequestDto, ct);
-
-        return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
     }
 
     [HttpPut("{userId}")]

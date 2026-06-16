@@ -29,7 +29,7 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetByEmailAsync(request.Email, ct);
 
         if (existingUser != null)
-            throw new InvalidOperationException("Email already exists.");
+            throw new InvalidOperationException("User with this email already exists.");
 
         var user = new User
         {
@@ -41,7 +41,7 @@ public class AuthService : IAuthService
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
-        await _userRepository.AddAsync(user, CancellationToken.None);
+        await _userRepository.AddAsync(user, ct);
 
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
 
