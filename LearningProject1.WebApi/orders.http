@@ -1,0 +1,160 @@
+@baseUrl = http://localhost:5299
+
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiVGVzdCBVc2VyIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoidXNlckB0ZXN0LmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJleHAiOjE3ODE3NjU2MjMsImlzcyI6IkxlYXJuaW5nUHJvamVjdDEiLCJhdWQiOiJMZWFybmluZ1Byb2plY3QxLkNsaWVudCJ9.i4hpMLuCU0g9ZoNmU6mm1xDL_686EE-arPJLEX6Nm_w
+@adminToken =
+
+@myOrderId = 1
+@adminOrderId = 1
+@targetUserId = 1
+
+### =========================
+### USER - CREATE MY ORDER
+### Expected: 201 Created
+### =========================
+
+POST {{baseUrl}}/orders/my
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "product": "Keyboard",
+  "quantity": 2,
+  "price": 49.99
+}
+
+### =========================
+### USER - GET MY ORDERS
+### Expected: 200 OK
+### =========================
+
+GET {{baseUrl}}/orders/my
+Authorization: Bearer {{userToken}}
+
+### =========================
+### USER - GET MY ORDER BY ID
+### Expected: 200 OK if order belongs to user
+### Expected: 403 Forbidden if order belongs to another user
+### Expected: 404 Not Found if order does not exist
+### =========================
+
+GET {{baseUrl}}/orders/my/{{myOrderId}}
+Authorization: Bearer {{userToken}}
+
+### =========================
+### USER - UPDATE MY ORDER
+### Expected: 200 OK if order belongs to user
+### Expected: 403 Forbidden if order belongs to another user
+### =========================
+
+PUT {{baseUrl}}/orders/my/{{myOrderId}}
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "product": "Updated Keyboard",
+  "quantity": 3,
+  "price": 44.99
+}
+
+### =========================
+### USER - DELETE MY ORDER
+### Expected: 204 No Content if order belongs to user
+### Expected: 403 Forbidden if order belongs to another user
+### =========================
+
+DELETE {{baseUrl}}/orders/my/{{myOrderId}}
+Authorization: Bearer {{userToken}}
+
+### =========================
+### USER - GET MY ORDERS WITHOUT TOKEN
+### Expected: 401 Unauthorized
+### =========================
+
+GET {{baseUrl}}/orders/my
+
+### =========================
+### ADMIN - CREATE ORDER FOR USER
+### Expected: 201 Created
+### =========================
+
+POST {{baseUrl}}/orders/admin
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": {{targetUserId}},
+  "product": "Admin Created Product",
+  "quantity": 1,
+  "price": 199.99
+}
+
+### =========================
+### ADMIN - CREATE ORDER WITH USER TOKEN
+### Expected: 403 Forbidden
+### =========================
+
+POST {{baseUrl}}/orders/admin
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "userId": {{targetUserId}},
+  "product": "Should Not Work",
+  "quantity": 1,
+  "price": 10.00
+}
+
+### =========================
+### ADMIN - GET ALL ORDERS
+### Expected: 200 OK
+### =========================
+
+GET {{baseUrl}}/orders/admin
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - GET ALL ORDERS WITH USER TOKEN
+### Expected: 403 Forbidden
+### =========================
+
+GET {{baseUrl}}/orders/admin
+Authorization: Bearer {{userToken}}
+
+### =========================
+### ADMIN - GET ORDER BY ID
+### Expected: 200 OK / 404 Not Found
+### =========================
+
+GET {{baseUrl}}/orders/admin/{{adminOrderId}}
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - GET ORDERS BY USER ID
+### Expected: 200 OK
+### =========================
+
+GET {{baseUrl}}/orders/admin/user/{{targetUserId}}
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - UPDATE ORDER
+### Expected: 200 OK / 404 Not Found
+### =========================
+
+PUT {{baseUrl}}/orders/admin/{{adminOrderId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "product": "Admin Updated Product",
+  "quantity": 5,
+  "price": 29.99
+}
+
+### =========================
+### ADMIN - DELETE ORDER
+### Expected: 204 No Content / 404 Not Found
+### =========================
+
+DELETE {{baseUrl}}/orders/admin/{{adminOrderId}}
+Authorization: Bearer {{adminToken}}

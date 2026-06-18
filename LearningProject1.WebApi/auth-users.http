@@ -1,0 +1,215 @@
+@baseUrl = http://localhost:5299/api
+
+@userEmail = user@test.com
+@userPassword = Password123!
+
+@adminEmail = admin@test.com
+@adminPassword = Admin123!
+
+@userToken =
+@adminToken =
+
+### =========================
+### AUTH - REGISTER USER
+### =========================
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### =========================
+### AUTH - LOGIN USER
+### =========================
+# After this request, copy token manually into @userToken above
+# or use response variable support if your REST Client supports it.
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### =========================
+### AUTH - LOGIN ADMIN
+### =========================
+# Copy admin token manually into @adminToken above
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### =========================
+### USER - GET ME
+### Expected: 200 OK
+### =========================
+
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+
+### =========================
+### USER - UPDATE ME WITHOUT PASSWORD CHANGE
+### Expected: 200 OK
+### =========================
+
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User",
+  "email": "updated.user@test.com"
+}
+
+### =========================
+### USER - UPDATE ME WITH PASSWORD CHANGE
+### Expected: 200 OK
+### =========================
+
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User",
+  "email": "updated.user@test.com",
+  "oldPassword": "{{userPassword}}",
+  "newPassword": "NewPassword123!"
+}
+
+### =========================
+### USER - UPDATE ME WITH WRONG OLD PASSWORD
+### Expected: 400 Bad Request
+### =========================
+
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User",
+  "email": "updated.user@test.com",
+  "oldPassword": "WrongPassword123!",
+  "newPassword": "AnotherPassword123!"
+}
+
+### =========================
+### USER - UPDATE ME WITH ONLY OLD PASSWORD
+### Expected: 400 Bad Request
+### =========================
+
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User",
+  "email": "updated.user@test.com",
+  "oldPassword": "SomePassword123!"
+}
+
+### =========================
+### USER - UPDATE ME WITH ONLY NEW PASSWORD
+### Expected: 400 Bad Request
+### =========================
+
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User",
+  "email": "updated.user@test.com",
+  "newPassword": "NewPassword123!"
+}
+
+### =========================
+### USER - GET ME WITHOUT TOKEN
+### Expected: 401 Unauthorized
+### =========================
+
+GET {{baseUrl}}/users/me
+
+### =========================
+### ADMIN - GET ALL USERS
+### Expected with admin token: 200 OK
+### =========================
+
+GET {{baseUrl}}/users/admin
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - GET ALL USERS WITH USER TOKEN
+### Expected: 403 Forbidden
+### =========================
+
+GET {{baseUrl}}/users/admin
+Authorization: Bearer {{userToken}}
+
+### =========================
+### ADMIN - GET USER BY ID
+### Change userId manually
+### Expected: 200 OK / 404 Not Found
+### =========================
+
+GET {{baseUrl}}/users/admin/1
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - SEARCH USERS
+### Expected: 200 OK
+### =========================
+
+GET {{baseUrl}}/users/admin/search?search=test&page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - SEARCH USERS EMPTY SEARCH
+### Expected: 400 Bad Request
+### =========================
+
+GET {{baseUrl}}/users/admin/search?search=&page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - SEARCH USERS INVALID PAGE
+### Expected: 400 Bad Request
+### =========================
+
+GET {{baseUrl}}/users/admin/search?search=test&page=0&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+### =========================
+### ADMIN - UPDATE USER
+### Change userId manually
+### Expected: 200 OK / 404 Not Found
+### =========================
+
+PUT {{baseUrl}}/users/admin/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Admin Updated User",
+  "email": "admin.updated.user@test.com",
+  "password": "Password123!"
+}
+
+### =========================
+### ADMIN - DELETE USER
+### Be careful with real users
+### Expected: 204 No Content / 404 Not Found
+### =========================
+
+DELETE {{baseUrl}}/users/admin/999
+Authorization: Bearer {{adminToken}}
