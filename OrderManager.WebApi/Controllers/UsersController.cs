@@ -168,9 +168,9 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // =========================
+    // -------------------------------------------------------------------
     // HELPER
-    // =========================
+    // -------------------------------------------------------------------
 
     private bool TryGetCurrentUserId(out int userId)
     {

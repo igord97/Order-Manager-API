@@ -19,9 +19,9 @@ public class OrdersController : ControllerBase
         _orderService = orderService;
     }
 
-    // =========================
+    // -------------------------------------------------------------------
     // USER ENDPOINTS
-    // =========================
+    // -------------------------------------------------------------------
 
     [HttpPost("my")]
     [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
@@ -141,9 +141,9 @@ public class OrdersController : ControllerBase
         return NoContent();
     }
 
-    // =========================
+    // -------------------------------------------------------------------
     // ADMIN ENDPOINTS
-    // =========================
+    // -------------------------------------------------------------------
 
     [Authorize(Roles = "Admin")]
     [HttpPost("admin")]
@@ -260,9 +260,9 @@ public class OrdersController : ControllerBase
         return NoContent();
     }
 
-    // =========================
+    // -------------------------------------------------------------------
     // HELPER
-    // =========================
+    // -------------------------------------------------------------------
 
     private bool TryGetCurrentUserId(out int userId)
     {
