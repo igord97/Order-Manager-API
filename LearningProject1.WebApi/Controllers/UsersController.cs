@@ -1,4 +1,5 @@
-﻿using LearningProject1.Core.DTOs.User;
+﻿using Azure.Core;
+using LearningProject1.Core.DTOs.User;
 using LearningProject1.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,102 +19,99 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    [AllowAnonymous]
-    [HttpPost]
-    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserResponseDto>> CreateUser([FromBody] UserRequestDto userRequestDto, CancellationToken ct)
-    {
-        var createdUser = await _userService.CreateUserAsync(userRequestDto, ct);
+    // -------------------------------------------------------------------
+    // USER ENDPOINTS
+    // -------------------------------------------------------------------
 
-        return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserResponseDto>> GetMe(CancellationToken ct)
+    {
+        if (!TryGetCurrentUserId(out var currentUserId))
+            return Unauthorized();
+
+        var user = await _userService.GetUserByIdAsync(currentUserId, ct);
+
+        if (user == null)
+            return NotFound();
+
+        return Ok(user);
     }
 
+    [HttpPut("me")]
+    [ProducesResponseType(typeof(UpdateUserResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UpdateUserResponseDto>> UpdateMe(
+        [FromBody] UpdateMyProfileRequestDto updateMyProfileRequestDto,
+        CancellationToken ct)
+    {
+        if (!TryGetCurrentUserId(out var currentUserId))
+            return Unauthorized();
+
+        var existingUser = await _userService.GetUserByIdAsync(currentUserId, ct);
+
+        if (existingUser == null)
+            return NotFound();
+
+        var oldPasswordProvided = !string.IsNullOrWhiteSpace(updateMyProfileRequestDto.OldPassword);
+        var newPasswordProvided = !string.IsNullOrWhiteSpace(updateMyProfileRequestDto.NewPassword);
+
+        if (oldPasswordProvided != newPasswordProvided)
+            return BadRequest("Both old password and new password must be provided to change password.");
+
+        var updatedUser = await _userService.UpdateMyProfileAsync(currentUserId, updateMyProfileRequestDto, ct);
+
+        if (updatedUser == null)
+            return BadRequest("Old password is incorrect.");
+
+        return Ok(updatedUser);
+    }
+
+    // -------------------------------------------------------------------
+    // ADMIN ENDPOINTS
+    // -------------------------------------------------------------------
+
     [Authorize(Roles = "Admin")]
-    [HttpGet]
+    [HttpGet("admin")]
     [ProducesResponseType(typeof(IEnumerable<UserResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<UserResponseDto>>> AdminGetAllUsers(CancellationToken ct)
     {
         var users = await _userService.GetAllUsersAsync(ct);
 
         return Ok(users);
     }
 
-    [HttpGet("{userId}")]
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin/{userId:int}")]
     [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserResponseDto>> GetById(int userId, CancellationToken ct)
+    public async Task<ActionResult<UserResponseDto>> AdminGetUserById(
+        int userId,
+        CancellationToken ct)
     {
         var user = await _userService.GetUserByIdAsync(userId, ct);
 
         if (user == null)
             return NotFound();
 
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin)
-        {
-            if (!TryGetCurrentUserId(out var currentUserId))
-                return Unauthorized();
-
-            if (userId != currentUserId)
-                return Forbid();
-        }
-
         return Ok(user);
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("email/{userEmail}")]
-    [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserResponseDto>> GetByEmail(string userEmail, CancellationToken ct)
-    {
-        var user = await _userService.GetByEmailAsync(userEmail, ct);
-
-        if (user == null)
-            return NotFound();
-
-        return Ok(user);
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("name/{userName}")]
-    [ProducesResponseType(typeof(IEnumerable<UserResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetByName(string userName, CancellationToken ct)
-    {
-        var users = await _userService.GetByNameAsync(userName, ct);
-
-        return Ok(users);
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("names")]
-    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<string>>> GetAllNames(CancellationToken ct)
-    {
-        var names = await _userService.GetAllNamesAsync(ct);
-
-        return Ok(names);
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("search")]
+    [HttpGet("admin/search")]
     [ProducesResponseType(typeof(IEnumerable<UserResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<UserResponseDto>>> SearchUsers(
+    public async Task<ActionResult<IEnumerable<UserResponseDto>>> AdminSearchUsers(
         [FromQuery] string search,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
@@ -130,13 +128,14 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
-    [HttpPut("{userId}")]
+    [Authorize(Roles = "Admin")]
+    [HttpPut("admin/{userId:int}")]
     [ProducesResponseType(typeof(UpdateUserResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UpdateUserResponseDto>> UpdateUser(
+    public async Task<ActionResult<UpdateUserResponseDto>> AdminUpdateUser(
         int userId,
         [FromBody] UserRequestDto userRequestDto,
         CancellationToken ct)
@@ -146,31 +145,22 @@ public class UsersController : ControllerBase
         if (existingUser == null)
             return NotFound();
 
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin)
-        {
-            if (!TryGetCurrentUserId(out var currentUserId))
-                return Unauthorized();
-
-            if (userId != currentUserId)
-                return Forbid();
-        }
-
         var updatedUser = await _userService.UpdateUserAsync(userId, userRequestDto, ct);
 
         return Ok(updatedUser);
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{userId}")]
+    [HttpDelete("admin/{userId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteUser(int userId, CancellationToken ct)
+    public async Task<IActionResult> AdminDeleteUser(
+        int userId,
+        CancellationToken ct)
     {
-        var deleted = await _userService.DeleteUserAsync(userId, ct);
+        var deleted = await _userService.DeleteUserAsync(userId, ct); // would be better to have property IsDeactivated, but can leave it like this for now (hard delete)
 
         if (!deleted)
             return NotFound();
@@ -178,7 +168,9 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    // =========================
     // HELPER
+    // =========================
 
     private bool TryGetCurrentUserId(out int userId)
     {

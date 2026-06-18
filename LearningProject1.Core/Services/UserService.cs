@@ -2,6 +2,8 @@
 using LearningProject1.Core.Exceptions;
 using LearningProject1.Core.Interfaces;
 using LearningProject1.Core.Mappers;
+using LearningProject1.Core.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace LearningProject1.Core.Services;
@@ -9,11 +11,13 @@ namespace LearningProject1.Core.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly PasswordHasher<User> _passwordHasher;
     private readonly ILogger<UserService> _logger;
 
     public UserService(IUserRepository userRepository, ILogger<UserService> logger)
     {
         _userRepository = userRepository;
+        _passwordHasher = new PasswordHasher<User>();
         _logger = logger;
     }
 
@@ -141,6 +145,43 @@ public class UserService : IUserService
         var updatedUser = await _userRepository.UpdateAsync(user, ct);
 
         _logger.LogInformation("User with id {UserId} updated successfully", updatedUser.Id);
+
+        return UserMapper.ToUpdateResponseDto(updatedUser);
+    }
+
+    public async Task<UpdateUserResponseDto?> UpdateMyProfileAsync(
+    int userId,
+    UpdateMyProfileRequestDto request,
+    CancellationToken ct)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, ct);
+
+        if (user == null)
+            return null;
+
+        user.Name = request.Name;
+        user.Email = request.Email;
+
+        var oldPasswordProvided = !string.IsNullOrWhiteSpace(request.OldPassword);
+        var newPasswordProvided = !string.IsNullOrWhiteSpace(request.NewPassword);
+
+        if (oldPasswordProvided || newPasswordProvided)
+        {
+            if (!oldPasswordProvided || !newPasswordProvided)
+                throw new ArgumentException("Both old password and new password must be provided.");
+
+            var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(
+                user,
+                user.PasswordHash,
+                request.OldPassword!);
+
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+                return null;
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword!);
+        }
+
+        var updatedUser = await _userRepository.UpdateAsync(user, ct);
 
         return UserMapper.ToUpdateResponseDto(updatedUser);
     }

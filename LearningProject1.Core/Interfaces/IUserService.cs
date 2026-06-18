@@ -12,6 +12,7 @@ public interface IUserService
     Task<List<string>> GetAllNamesAsync(CancellationToken ct);
     Task<List<UserResponseDto>> SearchUsersAsync(string search, int page, int pageSize, CancellationToken ct);
     Task<UpdateUserResponseDto> UpdateUserAsync(int id, UserRequestDto updateUserDto, CancellationToken ct);
+    Task<UpdateUserResponseDto> UpdateMyProfileAsync(int id, UpdateMyProfileRequestDto updateMyProfileRequestDto, CancellationToken ct);
     Task<bool> DeleteUserAsync(int id, CancellationToken ct);
 }
     
