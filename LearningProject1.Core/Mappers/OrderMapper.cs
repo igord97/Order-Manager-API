@@ -1,4 +1,5 @@
-﻿using LearningProject1.Core.DTOs.Order;
+﻿using LearningProject1.Core.Commands;
+using LearningProject1.Core.DTOs.Order;
 using LearningProject1.Core.DTOs.User;
 using LearningProject1.Core.Models;
 
@@ -6,14 +7,14 @@ namespace LearningProject1.Core.Mappers;
 
 public class OrderMapper
 {
-    public static Order ToEntity(OrderRequestDto orderRequestDto)
+    public static Order ToEntity(CreateOrderCommand command)
     {
         return new Order
         {
-            Product = orderRequestDto.Product,
-            Quantity = orderRequestDto.Quantity,
-            Price = orderRequestDto.Price,
-            UserId = orderRequestDto.UserId
+            UserId = command.UserId,
+            Product = command.Product,
+            Quantity = command.Quantity,
+            Price = command.Price
         };
     }
 

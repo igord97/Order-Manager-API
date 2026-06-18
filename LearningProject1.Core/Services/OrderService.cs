@@ -1,4 +1,5 @@
-﻿using LearningProject1.Core.DTOs.Order;
+﻿using LearningProject1.Core.Commands;
+using LearningProject1.Core.DTOs.Order;
 using LearningProject1.Core.Exceptions;
 using LearningProject1.Core.Interfaces;
 using LearningProject1.Core.Mappers;
@@ -19,42 +20,52 @@ public class OrderService : IOrderService
         _logger = logger;
     }
 
-    public async Task<OrderResponseDto> CreateOrderAsync(OrderRequestDto orderRequestDto, CancellationToken ct)
+    public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderCommand createOrderCommand, CancellationToken ct)
     {
-        _logger.LogInformation("Creating order for user {UserId}", orderRequestDto.UserId);
+        _logger.LogInformation("Creating order for user {UserId}", createOrderCommand.UserId);
 
-        if (string.IsNullOrWhiteSpace(orderRequestDto.Product))
+        if (string.IsNullOrWhiteSpace(createOrderCommand.Product))
         {
             _logger.LogWarning("Product is required.");
             throw new BadRequestException("Product is required.");
         }
 
-        if (orderRequestDto.Price <= 0)
+        if (createOrderCommand.Quantity <= 0)
+        {
+            _logger.LogWarning(
+                "Order creation failed because quantity was invalid: {Quantity}",
+                createOrderCommand.Quantity);
+
+            throw new BadRequestException("Quantity must be greater than zero.");
+        }
+
+        if (createOrderCommand.Price <= 0)
         {
             _logger.LogWarning(
                 "Order creation failed because price was invalid: {Price}",
-                orderRequestDto.Price);
+                createOrderCommand.Price);
 
             throw new BadRequestException("Price must be greater than zero.");
         }
 
-        var user = await _userRepository.GetByIdAsync(orderRequestDto.UserId, ct);
+        var user = await _userRepository.GetByIdAsync(createOrderCommand.UserId, ct);
 
         if (user is null)
         {
-            _logger.LogWarning("User with id {UserId} was not found", orderRequestDto.UserId);
+            _logger.LogWarning("User with id {UserId} was not found", createOrderCommand.UserId);
             throw new BadRequestException("UserId must belong to an existing user.");
         }
 
-        var total = orderRequestDto.Quantity * orderRequestDto.Price;
+        var order = OrderMapper.ToEntity(createOrderCommand);
 
-        var order = OrderMapper.ToEntity(orderRequestDto);
-
-        order.Total = total;
+        order.Total = createOrderCommand.Quantity * createOrderCommand.Price;
 
         var createdOrder = await _orderRepository.AddAsync(order, ct);
 
-        _logger.LogInformation("Order created successfully with id {OrderId} for user {UserId}", createdOrder.Id, createdOrder.UserId);
+        _logger.LogInformation(
+            "Order created successfully with id {OrderId} for user {UserId}",
+            createdOrder.Id,
+            createdOrder.UserId);
 
         return OrderMapper.ToResponseDto(createdOrder);
     }

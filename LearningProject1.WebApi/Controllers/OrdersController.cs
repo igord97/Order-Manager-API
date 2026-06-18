@@ -1,4 +1,5 @@
-﻿using LearningProject1.Core.DTOs.Order;
+﻿using LearningProject1.Core.Commands;
+using LearningProject1.Core.DTOs.Order;
 using LearningProject1.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,34 +19,35 @@ public class OrdersController : ControllerBase
         _orderService = orderService;
     }
 
-    [HttpPost]
+    // =========================
+    // USER ENDPOINTS
+    // =========================
+
+    [HttpPost("my")]
     [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<OrderResponseDto>> CreateOrder([FromBody] OrderRequestDto orderRequestDto, CancellationToken ct)
+    public async Task<ActionResult<OrderResponseDto>> CreateMyOrder(
+        [FromBody] OrderRequestDto orderRequestDto,
+        CancellationToken ct)
     {
-        var isAdmin = User.IsInRole("Admin");
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
 
-        if (!isAdmin)
+        var command = new CreateOrderCommand
         {
-            if (!TryGetCurrentUserId(out var userId))
-                return Unauthorized();
+            UserId = userId,
+            Product = orderRequestDto.Product,
+            Quantity = orderRequestDto.Quantity,
+            Price = orderRequestDto.Price
+        };
 
-            orderRequestDto.UserId = userId;
-        }
+        var createdOrder = await _orderService.CreateOrderAsync(command, ct);
 
-        var createdOrder = await _orderService.CreateOrderAsync(orderRequestDto, ct); // would be better to have DTO for specific user
-
-        return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id }, createdOrder);
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetAll(CancellationToken ct)
-    {
-        var orders = await _orderService.GetAllOrdersAsync(ct);
-        return Ok(orders);
+        return CreatedAtAction(
+            nameof(GetMyOrderById),
+            new { orderId = createdOrder.Id },
+            createdOrder);
     }
 
     [HttpGet("my")]
@@ -61,95 +63,75 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
-    [HttpGet("{orderId}")]
+    [HttpGet("my/{orderId:int}")]
     [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OrderResponseDto>> GetById(int orderId, CancellationToken ct)
+    public async Task<ActionResult<OrderResponseDto>> GetMyOrderById(
+        int orderId,
+        CancellationToken ct)
     {
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
         var order = await _orderService.GetOrderByIdAsync(orderId, ct);
 
         if (order == null)
             return NotFound();
 
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin)
-        {
-            if (!TryGetCurrentUserId(out var userId))
-                return Unauthorized();
-
-            if (order.UserId != userId)
-                return Forbid();
-        }
+        if (order.UserId != userId)
+            return Forbid();
 
         return Ok(order);
     }
 
-    [Authorize(Roles = "Admin")]
-    [HttpGet("user/{userId}")]
-    [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetByUserId(int userId, CancellationToken ct)
-    {
-        var orders = await _orderService.GetOrdersByUserIdAsync(userId, ct);
-        return Ok(orders);
-    }
-
-    [HttpPut("{orderId}")]
+    [HttpPut("my/{orderId:int}")]
     [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OrderResponseDto>> UpdateOrder(int orderId, [FromBody] UpdateOrderRequestDto orderRequestDto, CancellationToken ct)
+    public async Task<ActionResult<OrderResponseDto>> UpdateMyOrder(
+        int orderId,
+        [FromBody] UpdateOrderRequestDto orderRequestDto,
+        CancellationToken ct)
     {
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
         var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
 
         if (existingOrder == null)
             return NotFound();
 
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin)
-        {
-            if (!TryGetCurrentUserId(out var userId))
-                return Unauthorized();
-
-            if (existingOrder.UserId != userId)
-                return Forbid();
-        }
+        if (existingOrder.UserId != userId)
+            return Forbid();
 
         var updatedOrder = await _orderService.UpdateOrderAsync(orderId, orderRequestDto, ct);
 
         return Ok(updatedOrder);
     }
 
-    [HttpDelete("{orderId}")]
+    [HttpDelete("my/{orderId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteOrder(int orderId, CancellationToken ct)
+    public async Task<IActionResult> DeleteMyOrder(
+        int orderId,
+        CancellationToken ct)
     {
+        if (!TryGetCurrentUserId(out var userId))
+            return Unauthorized();
+
         var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
 
         if (existingOrder == null)
             return NotFound();
 
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin)
-        {
-            if (!TryGetCurrentUserId(out var userId))
-                return Unauthorized();
-
-            if (existingOrder.UserId != userId)
-                return Forbid();
-        }
+        if (existingOrder.UserId != userId)
+            return Forbid();
 
         var deleted = await _orderService.DeleteOrderAsync(orderId, ct);
 
@@ -159,7 +141,128 @@ public class OrdersController : ControllerBase
         return NoContent();
     }
 
+    // =========================
+    // ADMIN ENDPOINTS
+    // =========================
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("admin")]
+    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<OrderResponseDto>> AdminCreateOrder(
+        [FromBody] AdminOrderRequestDto adminOrderRequestDto,
+        CancellationToken ct)
+    {
+        var command = new CreateOrderCommand
+        {
+            UserId = adminOrderRequestDto.UserId,
+            Product = adminOrderRequestDto.Product,
+            Quantity = adminOrderRequestDto.Quantity,
+            Price = adminOrderRequestDto.Price
+        };
+
+        var createdOrder = await _orderService.CreateOrderAsync(command, ct);
+
+        return CreatedAtAction(
+            nameof(AdminGetOrderById),
+            new { orderId = createdOrder.Id },
+            createdOrder);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin")]
+    [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> AdminGetAllOrders(CancellationToken ct)
+    {
+        var orders = await _orderService.GetAllOrdersAsync(ct);
+
+        return Ok(orders);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin/{orderId:int}")]
+    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OrderResponseDto>> AdminGetOrderById(
+        int orderId,
+        CancellationToken ct)
+    {
+        var order = await _orderService.GetOrderByIdAsync(orderId, ct);
+
+        if (order == null)
+            return NotFound();
+
+        return Ok(order);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin/user/{userId:int}")]
+    [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> AdminGetOrdersByUserId(
+        int userId,
+        CancellationToken ct)
+    {
+        var orders = await _orderService.GetOrdersByUserIdAsync(userId, ct);
+
+        return Ok(orders);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("admin/{orderId:int}")]
+    [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OrderResponseDto>> AdminUpdateOrder(
+        int orderId,
+        [FromBody] UpdateOrderRequestDto orderRequestDto,
+        CancellationToken ct)
+    {
+        var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
+
+        if (existingOrder == null)
+            return NotFound();
+
+        var updatedOrder = await _orderService.UpdateOrderAsync(orderId, orderRequestDto, ct);
+
+        return Ok(updatedOrder);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("admin/{orderId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AdminDeleteOrder(
+        int orderId,
+        CancellationToken ct)
+    {
+        var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
+
+        if (existingOrder == null)
+            return NotFound();
+
+        var deleted = await _orderService.DeleteOrderAsync(orderId, ct);
+
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
+    }
+
+    // =========================
     // HELPER
+    // =========================
 
     private bool TryGetCurrentUserId(out int userId)
     {

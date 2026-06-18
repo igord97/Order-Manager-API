@@ -3,8 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LearningProject1.Core.DTOs.Order;
 
-public class OrderRequestDto
+public class AdminOrderRequestDto
 {
+    [DefaultValue(1)]
+    [Required]
+    public int UserId { get; set; } = 1;
+
     [Required]
     [DefaultValue("product")]
     [MaxLength(100)]
