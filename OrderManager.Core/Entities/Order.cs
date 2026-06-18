@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Net;
 
 namespace OrderManager.Core.Entities;
 
-[Table("Orders")]
+[Table("Orders", Schema="dbo")]
 public class Order : BaseEntity
 {
     [Key]

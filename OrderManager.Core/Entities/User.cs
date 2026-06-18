@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OrderManager.Core.Entities;
 
-[Table("Users")]
+[Table("Users", Schema = "dbo")]
 public class User : BaseEntity
 {
     [Key]
