@@ -1,6 +1,6 @@
-# LearningProject
+# OrderManager
 
-LearningProject1 is an ASP.NET Core Web API project created for learning backend development with a focus on production-style backend practices.
+OrderManager is an ASP.NET Core Web API project created for learning backend development with a focus on production-style backend practices.
 
 The project demonstrates a layered architecture using Controllers, Services, Repositories, DTOs, Entity Framework Core, SQL Server, Dependency Injection, Swagger, custom middleware, global exception handling, EF Core migrations, JWT authentication, role-based authorization, password hashing, and Swagger JWT bearer token support.
 
@@ -9,24 +9,23 @@ The project demonstrates a layered architecture using Controllers, Services, Rep
 The solution is split into three projects:
 
 ```text
-LearningProject1.WebApi
-LearningProject1.Core
-LearningProject1.DataLayer
+OrderManager.WebApi
+OrderManager.Core
+OrderManager.DataLayer
 ```
 
 ## Completed Recent Improvements
 
 Recently completed authentication and authorization improvements:
 
-* Added JWT authentication
-* Added password hashing
-* Added AuthController
-* Added Register and Login endpoints
-* Protected order endpoints with authorization
-* Read the current user from JWT claims
-* Removed UserId from regular order creation requests after authentication was implemented
-* Added Swagger support for JWT bearer tokens
-
+- Added JWT authentication
+- Added password hashing
+- Added AuthController
+- Added Register and Login endpoints
+- Protected order endpoints with authorization
+- Read the current user from JWT claims
+- Removed UserId from regular order creation requests after authentication was implemented
+- Added Swagger support for JWT bearer tokens
 
 ## Architecture
 
@@ -57,71 +56,71 @@ Database Entity
 
 ## Projects
 
-### LearningProject1.WebApi
+### OrderManager.WebApi
 
 This is the startup project.
 
 It contains everything related to the HTTP API:
 
-* Controllers
-* Middleware
-* Program.cs
-* appsettings.json
-* Swagger/OpenAPI configuration
-* Dependency Injection setup
-* Database provider configuration
+- Controllers
+- Middleware
+- Program.cs
+- appsettings.json
+- Swagger/OpenAPI configuration
+- Dependency Injection setup
+- Database provider configuration
 
 Responsibilities:
 
-* Receive HTTP requests
-* Call services
-* Return HTTP responses
-* Register dependencies
-* Configure middleware
-* Configure Swagger
-* Configure SQL Server through Entity Framework Core
+- Receive HTTP requests
+- Call services
+- Return HTTP responses
+- Register dependencies
+- Configure middleware
+- Configure Swagger
+- Configure SQL Server through Entity Framework Core
 
-### LearningProject1.Core
+### OrderManager.Core
 
 This project contains the main application logic and shared contracts.
 
 It contains:
 
-* Models
-* DTOs
-* Mappers
-* Services
-* Interfaces
-* Custom exceptions
+- Models
+- DTOs
+- Mappers
+- Services
+- Interfaces
+- Custom exceptions
 
 Responsibilities:
 
-* Define domain models
-* Define request and response DTOs
-* Implement business logic
-* Define repository and service interfaces
-* Map entities to DTOs
-* Validate business rules
-* Throw custom exceptions when something is invalid
+- Define domain models
+- Define request and response DTOs
+- Implement business logic
+- Define repository and service interfaces
+- Map entities to DTOs
+- Validate business rules
+- Throw custom exceptions when something is invalid
 
-### LearningProject1.DataLayer
+### OrderManager.DataLayer
 
 This project contains data access code.
 
 It contains:
 
-* AppDbContext
-* Repository implementations
-* EF Core database configuration
-* EF Core migrations
+- AppDbContext
+- Repository implementations
+- EF Core database configuration
+- EF Core migrations
 
 Responsibilities:
 
-* Communicate with the SQL Server database
-* Use Entity Framework Core
-* Implement repository interfaces from Core
-* Save, update, delete, and retrieve entities
-* Configure database relationships, indexes, precision, and constraints
+- Communicate with the SQL Server database
+- Use Entity Framework Core
+- Implement repository interfaces from Core
+- Save, update, delete, and retrieve entities
+- Configure database relationships, indexes, precision, and constraints
 
 ## Dependency Direction
 
@@ -145,23 +144,23 @@ A user represents a person who can create orders.
 
 Fields:
 
-* Id
-* Name
-* Email
-* PasswordHash
-* Role
-* Orders
-* CreatedAt
-* UpdatedAt
+- Id
+- Name
+- Email
+- PasswordHash
+- Role
+- Orders
+- CreatedAt
+- UpdatedAt
 
 Rules:
 
-* Name is required and limited to 50 characters.
-* Email is required and limited to 100 characters.
-* Email must be unique.
-* Passwords are hashed before being stored.
-* A user can have one role, such as User or Admin.
-* A user can have many orders.
+- Name is required and limited to 50 characters.
+- Email is required and limited to 100 characters.
+- Email must be unique.
+- Passwords are hashed before being stored.
+- A user can have one role, such as User or Admin.
+- A user can have many orders.
 
 ### Order
 
@@ -169,23 +168,23 @@ An order represents a product ordered by a user.
 
 Fields:
 
-* Id
-* Product
-* Quantity
-* Price
-* Total
-* UserId
-* User
-* CreatedAt
-* UpdatedAt
+- Id
+- Product
+- Quantity
+- Price
+- Total
+- UserId
+- User
+- CreatedAt
+- UpdatedAt
 
 Rules:
 
-* Product is required and limited to 100 characters.
-* Quantity must be greater than zero.
-* Price must be greater than zero.
-* Total is calculated by the backend.
-* One order belongs to one user.
+- Product is required and limited to 100 characters.
+- Quantity must be greater than zero.
+- Price must be greater than zero.
+- Total is calculated by the backend.
+- One order belongs to one user.
 
 Relationship:
 
@@ -211,17 +210,17 @@ Entities are not returned directly from controllers.
 
 Examples:
 
-* UserRequestDto
-* UserResponseDto
-* UpdateUserResponseDto
+- UserRequestDto
+- UserResponseDto
+- UpdateUserResponseDto
 
 ### Auth DTOs
 
 Examples:
 
-* RegisterRequestDto
-* LoginRequestDto
-* AuthResponseDto
+- RegisterRequestDto
+- LoginRequestDto
+- AuthResponseDto
 
 Auth DTOs are used for registration, login, and returning JWT tokens after successful authentication.
 
@@ -229,25 +228,25 @@ Auth DTOs are used for registration, login, and returning JWT tokens after succe
 
 Examples:
 
-* OrderRequestDto
-* UpdateOrderRequestDto
-* OrderResponseDto
+- OrderRequestDto
+- UpdateOrderRequestDto
+- OrderResponseDto
 
 The order create request contains the fields required to create an order.
 
 The order update request allows updating:
 
-* Product
-* Quantity
-* Price
+- Product
+- Quantity
+- Price
 
 The following fields are not updated directly by the client:
 
-* Id
-* UserId
-* Total
-* CreatedAt
-* UpdatedAt
+- Id
+- UserId
+- Total
+- CreatedAt
+- UpdatedAt
 
 Total is recalculated by the service whenever an order is created or updated.
 
@@ -257,18 +256,18 @@ Repositories are responsible for database access.
 
 Example responsibilities:
 
-* Get all users
-* Get user by id
-* Get user by email
-* Add user
-* Update user
-* Delete user
-* Get all orders
-* Get order by id
-* Get orders by user id
-* Add order
-* Update order
-* Delete order
+- Get all users
+- Get user by id
+- Get user by email
+- Add user
+- Update user
+- Delete user
+- Get all orders
+- Get order by id
+- Get orders by user id
+- Add order
+- Update order
+- Delete order
 
 Repositories use Entity Framework Core and AppDbContext.
 
@@ -282,14 +281,14 @@ Services contain business logic.
 
 Example responsibilities:
 
-* Validate business rules
-* Check if email already exists
-* Check if a user exists before creating an order
-* Check if an order exists before updating or deleting it
-* Calculate order total
-* Call repositories
-* Map models to response DTOs
-* Throw custom exceptions when something is invalid
+- Validate business rules
+- Check if email already exists
+- Check if a user exists before creating an order
+- Check if an order exists before updating or deleting it
+- Calculate order total
+- Call repositories
+- Map models to response DTOs
+- Throw custom exceptions when something is invalid
 
 Controllers should stay thin, and business logic should stay in services.
 
@@ -321,9 +320,9 @@ The project contains custom middleware.
 
 Logs:
 
-* HTTP method
-* Request path
-* Response status code
+- HTTP method
+- Request path
+- Response status code
 
 ### Global Exception Handling
 
@@ -362,10 +361,10 @@ The project uses appsettings.json for configuration.
 
 Example configuration values:
 
-* SQL Server connection string
-* Logging settings
-* JWT issuer, audience, and secret key
-* Application-specific values
+- SQL Server connection string
+- Logging settings
+- JWT issuer, audience, and secret key
+- Application-specific values
 
 Configuration is read in Program.cs.
 
@@ -374,7 +373,7 @@ Example connection string section:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=LearningProjectDb;Trusted_Connection=True;TrustServerCertificate=True"
+    "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=OrderManagerDb;Trusted_Connection=True;TrustServerCertificate=True"
   }
 }
 ```
@@ -389,14 +388,14 @@ The application was originally using an InMemory database for learning purposes,
 
 EF Core is used for:
 
-* DbContext configuration
-* Entity mapping
-* Relationships
-* Foreign keys
-* Unique indexes
-* Decimal precision
-* Migrations
-* Database updates
+- DbContext configuration
+- Entity mapping
+- Relationships
+- Foreign keys
+- Unique indexes
+- Decimal precision
+- Migrations
+- Database updates
 
 ### AppDbContext Configuration
 
@@ -404,12 +403,12 @@ AppDbContext configures the database model using Fluent API.
 
 Current configuration includes:
 
-* Unique index on User.Email
-* One-to-many relationship between User and Order
-* Cascade delete from User to Orders
-* Max length configuration for Name, Email, and Product
-* Decimal precision for Price and Total
-* datetime2 precision for CreatedAt and UpdatedAt
+- Unique index on User.Email
+- One-to-many relationship between User and Order
+- Cascade delete from User to Orders
+- Max length configuration for Name, Email, and Product
+- Decimal precision for Price and Total
+- datetime2 precision for CreatedAt and UpdatedAt
 
 ### Decimal Precision
 
@@ -443,11 +442,11 @@ EF Core migrations are used to create and update the database schema.
 Common commands:
 
 ```powershell
-Add-Migration InitialCreate -Project LearningProject1.DataLayer -StartupProject LearningProject1.WebApi
+Add-Migration InitialCreate -Project OrderManager.DataLayer -StartupProject OrderManager.WebApi
 ```
 
 ```powershell
-Update-Database -Project LearningProject1.DataLayer -StartupProject LearningProject1.WebApi
+Update-Database -Project OrderManager.DataLayer -StartupProject OrderManager.WebApi
 ```
 
 The database can be inspected through SQL Server Management Studio.
@@ -460,7 +459,7 @@ Orders
 __EFMigrationsHistory
 ```
 
-The __EFMigrationsHistory table is created by Entity Framework Core and stores information about applied migrations.
+The \_\_EFMigrationsHistory table is created by Entity Framework Core and stores information about applied migrations.
 
 ## API Behavior
 
@@ -472,11 +471,11 @@ Authentication is implemented using JWT bearer tokens.
 
 Supported operations include:
 
-* Register a new user
-* Login with email and password
-* Return a JWT token after successful login
-* Use JWT claims to identify the current user
-* Use roles to protect admin-only endpoints
+- Register a new user
+- Login with email and password
+- Return a JWT token after successful login
+- Use JWT claims to identify the current user
+- Use roles to protect admin-only endpoints
 
 Passwords are not stored as plain text. Password hashing is used before saving user credentials.
 
@@ -484,14 +483,14 @@ Passwords are not stored as plain text. Password hashing is used before saving u
 
 Supported operations include:
 
-* Get all users
-* Get user by id
-* Get user by email
-* Get users by name
-* Search users
-* Create user
-* Update user
-* Delete user
+- Get all users
+- Get user by id
+- Get user by email
+- Get users by name
+- Search users
+- Create user
+- Update user
+- Delete user
 
 User email is normalized before saving.
 
@@ -503,13 +502,13 @@ User endpoints are protected with authentication and authorization. Admin-only e
 
 Supported operations include:
 
-* Get all orders
-* Get order by id
-* Get orders by user id
-* Get current user's orders
-* Create order
-* Update order
-* Delete order
+- Get all orders
+- Get order by id
+- Get orders by user id
+- Get current user's orders
+- Create order
+- Update order
+- Delete order
 
 Order endpoints are protected with authorization.
 
@@ -529,29 +528,29 @@ The client does not directly control the Total field.
 
 This project demonstrates:
 
-* ASP.NET Core Web API basics
-* Controller -> Service -> Repository pattern
-* Dependency Injection
-* DTO usage
-* Entity Framework Core
-* SQL Server integration
-* EF Core migrations
-* DbContext configuration with Fluent API
-* One-to-many relationships
-* Foreign keys
-* Unique indexes
-* Decimal precision
-* Audit fields
-* Global exception handling
-* Custom middleware
-* Swagger/OpenAPI
-* JWT authentication
-* Password hashing
-* Register and login endpoints
-* Role-based authorization
-* JWT claims usage
-* Swagger JWT bearer token testing
-* Clean separation of concerns
-* Async/await usage
-* CancellationToken usage
-* Basic production-style backend practices
+- ASP.NET Core Web API basics
+- Controller -> Service -> Repository pattern
+- Dependency Injection
+- DTO usage
+- Entity Framework Core
+- SQL Server integration
+- EF Core migrations
+- DbContext configuration with Fluent API
+- One-to-many relationships
+- Foreign keys
+- Unique indexes
+- Decimal precision
+- Audit fields
+- Global exception handling
+- Custom middleware
+- Swagger/OpenAPI
+- JWT authentication
+- Password hashing
+- Register and login endpoints
+- Role-based authorization
+- JWT claims usage
+- Swagger JWT bearer token testing
+- Clean separation of concerns
+- Async/await usage
+- CancellationToken usage
+- Basic production-style backend practices
