@@ -2,7 +2,7 @@
 using OrderManager.Core.Exceptions;
 using OrderManager.Core.Interfaces;
 using OrderManager.Core.Mappers;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 

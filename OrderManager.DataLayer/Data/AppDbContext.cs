@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 
 namespace OrderManager.DataLayer.Data;
 
@@ -60,9 +60,6 @@ public class AppDbContext : DbContext
                 .HasPrecision(18, 2)
                 .IsRequired();
 
-            entity.Property(o => o.CreatedAt)
-                .IsRequired();
-
             entity.Property(u => u.CreatedAt)
                 .HasColumnType("datetime2(3)")
                 .IsRequired();
@@ -77,28 +74,19 @@ public class AppDbContext : DbContext
         var now = DateTime.UtcNow;
 
         var entries = ChangeTracker
-            .Entries()
-            .Where(e => e.Entity is User or Order &&
-                        (e.State == EntityState.Added || e.State == EntityState.Modified));
+            .Entries<BaseEntity>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified);
 
         foreach (var entry in entries)
         {
-            if (entry.Entity is User user)
+            if (entry.State == EntityState.Added)
             {
-                if (entry.State == EntityState.Added)
-                    user.CreatedAt = now;
-
-                if (entry.State == EntityState.Modified)
-                    user.UpdatedAt = now;
+                entry.Entity.CreatedAt = now;
             }
 
-            if (entry.Entity is Order order)
+            if (entry.State == EntityState.Modified)
             {
-                if (entry.State == EntityState.Added)
-                    order.CreatedAt = now;
-
-                if (entry.State == EntityState.Modified)
-                    order.UpdatedAt = now;
+                entry.Entity.UpdatedAt = now;
             }
         }
 

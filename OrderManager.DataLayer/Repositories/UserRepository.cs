@@ -1,5 +1,5 @@
 ﻿using OrderManager.DataLayer.Data;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 using OrderManager.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

@@ -22,7 +22,7 @@ namespace OrderManager.DataLayer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("OrderManager.Core.Models.Order", b =>
+            modelBuilder.Entity("OrderManager.Core.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,7 @@ namespace OrderManager.DataLayer.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("OrderManager.Core.Models.User", b =>
+            modelBuilder.Entity("OrderManager.Core.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -103,9 +103,9 @@ namespace OrderManager.DataLayer.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("OrderManager.Core.Models.Order", b =>
+            modelBuilder.Entity("OrderManager.Core.Entities.Order", b =>
                 {
-                    b.HasOne("OrderManager.Core.Models.User", "User")
+                    b.HasOne("OrderManager.Core.Entities.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -114,7 +114,7 @@ namespace OrderManager.DataLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OrderManager.Core.Models.User", b =>
+            modelBuilder.Entity("OrderManager.Core.Entities.User", b =>
                 {
                     b.Navigation("Orders");
                 });

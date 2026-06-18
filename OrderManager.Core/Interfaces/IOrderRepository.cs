@@ -1,4 +1,4 @@
-﻿using OrderManager.Core.Models;
+﻿using OrderManager.Core.Entities;
 
 namespace OrderManager.Core.Interfaces;
 

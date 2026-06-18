@@ -1,5 +1,4 @@
-﻿using OrderManager.Core.Commands;
-using OrderManager.Core.DTOs.Order;
+﻿using OrderManager.Core.DTOs.Order;
 using OrderManager.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +33,7 @@ public class OrdersController : ControllerBase
         if (!TryGetCurrentUserId(out var userId))
             return Unauthorized();
 
-        var command = new CreateOrderCommand
+        var command = new CreateOrderRequest
         {
             UserId = userId,
             Product = orderRequestDto.Product,
@@ -155,7 +154,7 @@ public class OrdersController : ControllerBase
         [FromBody] AdminOrderRequestDto adminOrderRequestDto,
         CancellationToken ct)
     {
-        var command = new CreateOrderCommand
+        var command = new CreateOrderRequest
         {
             UserId = adminOrderRequestDto.UserId,
             Product = adminOrderRequestDto.Product,

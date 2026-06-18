@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using OrderManager.Core.Interfaces;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 

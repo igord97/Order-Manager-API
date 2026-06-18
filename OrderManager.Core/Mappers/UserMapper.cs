@@ -1,5 +1,5 @@
 ﻿using OrderManager.Core.DTOs.User;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 
 namespace OrderManager.Core.Mappers;
 

@@ -1,13 +1,12 @@
-﻿using OrderManager.Core.Commands;
-using OrderManager.Core.DTOs.Order;
+﻿using OrderManager.Core.DTOs.Order;
 using OrderManager.Core.DTOs.User;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 
 namespace OrderManager.Core.Mappers;
 
 public class OrderMapper
 {
-    public static Order ToEntity(CreateOrderCommand command)
+    public static Order ToEntity(CreateOrderRequest command)
     {
         return new Order
         {

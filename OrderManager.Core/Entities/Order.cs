@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OrderManager.Core.Models;
+namespace OrderManager.Core.Entities;
 
 [Table("Orders")]
-public class Order
+public class Order : BaseEntity
 {
     [Key]
     public int Id { get; set; }
@@ -26,8 +26,4 @@ public class Order
     public int UserId { get; set; }
 
     public User User { get; set; } = null!;
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
 }

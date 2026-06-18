@@ -1,6 +1,6 @@
 ﻿using OrderManager.Core.DTOs.Auth;
 using OrderManager.Core.Interfaces;
-using OrderManager.Core.Models;
+using OrderManager.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 

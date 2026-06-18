@@ -1,5 +1,4 @@
-﻿using OrderManager.Core.Commands;
-using OrderManager.Core.DTOs.Order;
+﻿using OrderManager.Core.DTOs.Order;
 using OrderManager.Core.Exceptions;
 using OrderManager.Core.Interfaces;
 using OrderManager.Core.Mappers;
@@ -20,7 +19,7 @@ public class OrderService : IOrderService
         _logger = logger;
     }
 
-    public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderCommand createOrderCommand, CancellationToken ct)
+    public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderRequest createOrderCommand, CancellationToken ct)
     {
         _logger.LogInformation("Creating order for user {UserId}", createOrderCommand.UserId);
 

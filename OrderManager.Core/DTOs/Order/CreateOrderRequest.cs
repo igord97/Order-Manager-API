@@ -1,6 +1,6 @@
-﻿namespace OrderManager.Core.Commands;
+﻿namespace OrderManager.Core.DTOs.Order;
 
-public class CreateOrderCommand
+public class CreateOrderRequest
 {
     public int UserId { get; set; }
     public string Product { get; set; } = string.Empty;
