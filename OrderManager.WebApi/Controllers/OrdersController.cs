@@ -1,5 +1,5 @@
-﻿using OrderManager.Core.DTOs.Order;
-using OrderManager.Core.Interfaces;
+﻿using OrderManager.WebApi.Models.Order;
+using OrderManager.WebApi.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

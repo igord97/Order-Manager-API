@@ -1,5 +1,5 @@
-﻿using OrderManager.Core.DTOs.Auth;
-using OrderManager.Core.Interfaces;
+﻿using OrderManager.WebApi.Models.Auth;
+using OrderManager.WebApi.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace OrderManager.WebApi.Controllers;

@@ -1,9 +1,10 @@
 using System.Text;
 using OrderManager.WebApi.Middleware;
-using OrderManager.Core.Interfaces;
-using OrderManager.Core.Services;
-using OrderManager.DataLayer.Data;
+using OrderManager.WebApi.Interfaces;
+using OrderManager.WebApi.Services;
+using OrderManager.DataLayer.Context;
 using OrderManager.DataLayer.Repositories;
+using OrderManager.DataLayer.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;

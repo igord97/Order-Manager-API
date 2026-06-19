@@ -1,6 +1,6 @@
-﻿using OrderManager.DataLayer.Data;
-using OrderManager.Core.Entities;
-using OrderManager.Core.Interfaces;
+﻿using OrderManager.DataLayer.Context;
+using OrderManager.DataLayer.BusinessObjects.Persistent.dbo;
+using OrderManager.DataLayer.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace OrderManager.DataLayer.Repositories;

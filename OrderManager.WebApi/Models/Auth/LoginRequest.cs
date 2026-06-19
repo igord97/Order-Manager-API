@@ -1,0 +1,17 @@
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace OrderManager.WebApi.Models.Auth;
+
+public class LoginRequest
+{
+    [Required]
+    [EmailAddress]
+    [MaxLength(100)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [DefaultValue("")]
+    [MaxLength(100)]
+    public string Password { get; set; } = string.Empty;
+}

@@ -1,6 +1,6 @@
 ﻿using Azure.Core;
-using OrderManager.Core.DTOs.User;
-using OrderManager.Core.Interfaces;
+using OrderManager.WebApi.Models.User;
+using OrderManager.WebApi.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
