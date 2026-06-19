@@ -1,8 +1,21 @@
 # OrderManager
 
-OrderManager is an ASP.NET Core Web API project created for learning backend development with a focus on production-style backend practices.
+OrderManager is an ASP.NET Core Web API learning project focused on production-style backend development and company-style layered architecture.
 
-The project demonstrates a layered architecture using Controllers, Services, Repositories, DTOs, Entity Framework Core, SQL Server, Dependency Injection, Swagger, custom middleware, global exception handling, EF Core migrations, JWT authentication, role-based authorization, password hashing, Swagger JWT bearer token support, and integration testing.
+The project demonstrates ASP.NET Core Web API, SQL Server, Entity Framework Core, repository-based data access, service-layer business logic, API request/response models, custom middleware, global exception handling, JWT authentication, role-based authorization, password hashing, Swagger JWT bearer support, EF Core migrations, audit fields, and integration testing.
+
+The architecture was recently refactored to better match the company convention used in existing projects:
+
+```text
+Core
+  -> shared/common code
+
+DataLayer
+  -> EF Core persistence models and database access
+
+WebApi
+  -> HTTP API, request/response models, services, mappers, middleware
+```
 
 ## Project Structure
 
@@ -14,12 +27,65 @@ OrderManager.Core
 OrderManager.DataLayer
 ```
 
-The project also includes integration tests for validating the API behavior through real HTTP-style scenarios.
+The solution also includes integration tests for validating the API behavior through real HTTP-style scenarios.
+
+Recommended high-level structure:
+
+```text
+OrderManager.Core
+├── Constants
+├── Enums
+├── Exceptions
+├── Extensions
+├── Helpers
+└── Shared
+
+OrderManager.DataLayer
+├── BusinessObjects
+│   ├── Non-Persistent
+│   ├── Persistent
+│   │   └── dbo
+│   │       ├── BaseEntity.cs
+│   │       ├── User.cs
+│   │       └── Order.cs
+│   └── Views
+├── Configuration
+├── Context
+├── Interfaces
+├── Migrations
+├── Repositories
+├── SQL Scripts
+└── Utils
+
+OrderManager.WebApi
+├── Controllers
+├── Interfaces
+├── Mappers
+├── Middleware
+├── Models
+│   ├── Auth
+│   ├── Order
+│   └── User
+├── Services
+├── Properties
+├── appsettings.json
+└── Program.cs
+```
 
 ## Completed Recent Improvements
 
 Recently completed improvements:
 
+- Refactored the project structure to better match the company architecture
+- Moved EF Core persistence classes into `DataLayer/BusinessObjects/Persistent/dbo`
+- Replaced the previous `Core/Models` approach with DataLayer BusinessObjects and WebApi API models
+- Moved API request/response models into `WebApi/Models`
+- Moved API mappers into `WebApi/Mappers`
+- Moved service interfaces into `WebApi/Interfaces`
+- Moved repository interfaces into `DataLayer/Interfaces`
+- Renamed the data access folder from `Data` to `Context`
+- Kept `Core` focused on shared/common code such as constants and exceptions
+- Added company-style `BusinessObjects` folders: `Persistent`, `Non-Persistent`, and `Views`
 - Renamed the project to OrderManager
 - Split user and admin routes in UsersController
 - Split user and admin routes in OrdersController
@@ -42,30 +108,52 @@ Recently completed improvements:
 
 ## Architecture
 
-The project follows this request flow:
+The project follows a company-style layered architecture.
+
+### Request Flow
 
 ```text
 HTTP Request
    -> Controller
-   -> Request DTO
-   -> Service
-   -> Mapper
-   -> Entity / Model
-   -> Repository
-   -> DbContext / SQL Server Database
+   -> WebApi request model
+   -> WebApi service
+   -> WebApi mapper
+   -> DataLayer BusinessObject
+   -> DataLayer repository
+   -> AppDbContext
+   -> SQL Server Database
 ```
 
-The response flows back like this:
+### Response Flow
 
 ```text
-Database Entity
-   -> Repository
-   -> Service
-   -> Mapper
-   -> Response DTO
+SQL Server Database
+   -> AppDbContext
+   -> DataLayer repository
+   -> DataLayer BusinessObject
+   -> WebApi service
+   -> WebApi mapper
+   -> WebApi response model
    -> Controller
    -> HTTP Response
 ```
+
+### Model Types
+
+The project intentionally separates API models from database persistence models.
+
+```text
+WebApi/Models
+    Request and response models used by controllers and services.
+
+DataLayer/BusinessObjects/Persistent/dbo
+    EF Core persistence classes mapped to database tables.
+
+Core
+    Shared/common code such as constants, exceptions, enums, helpers, and extensions.
+```
+
+There is no separate `Core/Models` layer in the current structure. This keeps the project closer to the company convention where WebApi owns API models and DataLayer owns EF Core BusinessObjects.
 
 ## Projects
 
@@ -76,6 +164,10 @@ This is the startup project.
 It contains everything related to the HTTP API:
 
 - Controllers
+- API request/response models
+- API services
+- API service interfaces
+- API mappers
 - Middleware
 - Program.cs
 - appsettings.json
@@ -87,6 +179,7 @@ It contains everything related to the HTTP API:
 Responsibilities:
 
 - Receive HTTP requests
+- Validate API-level input
 - Call services
 - Return HTTP responses
 - Register dependencies
@@ -95,48 +188,53 @@ Responsibilities:
 - Configure SQL Server through Entity Framework Core
 - Configure JWT authentication
 - Configure role-based authorization
+- Map between API models and DataLayer BusinessObjects
 
 ### OrderManager.Core
 
-This project contains the main application logic and shared contracts.
+This project contains shared/common code used by other projects.
 
 It contains:
 
-- Models
-- DTOs
-- Mappers
-- Services
-- Interfaces
-- Custom exceptions
+- Constants
+- Enums
+- Exceptions
+- Extensions
+- Helpers
+- Shared utilities
 
 Responsibilities:
 
-- Define domain models
-- Define request and response DTOs
-- Implement business logic
-- Define repository and service interfaces
-- Map entities to DTOs
-- Validate business rules
-- Throw custom exceptions when something is invalid
+- Define shared constants such as role names
+- Define custom exceptions
+- Hold reusable shared code
+- Avoid direct dependency on WebApi or DataLayer
+
+Core should not contain API DTOs, WebApi services, repository implementations, EF Core entities, or database configuration.
 
 ### OrderManager.DataLayer
 
-This project contains data access code.
+This project contains persistence and data access code.
 
 It contains:
 
+- EF Core BusinessObjects
 - AppDbContext
+- Repository interfaces
 - Repository implementations
-- EF Core database configuration
+- EF Core configuration
 - EF Core migrations
+- SQL scripts
+- Data-layer utilities
 
 Responsibilities:
 
-- Communicate with the SQL Server database
+- Communicate with SQL Server
 - Use Entity Framework Core
-- Implement repository interfaces from Core
-- Save, update, delete, and retrieve entities
-- Configure database relationships, indexes, precision, and constraints
+- Define persistent database objects
+- Configure database mappings, indexes, relationships, precision, and constraints
+- Save, update, delete, and retrieve data
+- Provide repository abstractions and implementations
 
 ## Dependency Direction
 
@@ -148,11 +246,34 @@ WebApi -> DataLayer
 DataLayer -> Core
 ```
 
-The Core project does not depend on WebApi or DataLayer.
+The Core project should not depend on WebApi or DataLayer.
 
-This keeps the business logic separated from the API and database implementation.
+The WebApi project can reference DataLayer because services and mappers work with DataLayer BusinessObjects in this company-style structure.
 
-## Domain Models
+## BusinessObjects
+
+BusinessObjects are EF Core persistence classes used by the DataLayer.
+
+Current persistent BusinessObjects:
+
+```text
+DataLayer/BusinessObjects/Persistent/dbo/User.cs
+DataLayer/BusinessObjects/Persistent/dbo/Order.cs
+DataLayer/BusinessObjects/Persistent/dbo/BaseEntity.cs
+```
+
+### BusinessObjects Folder Meaning
+
+```text
+Persistent
+    Classes mapped to real database tables.
+
+Non-Persistent
+    Classes used for query results, stored procedure results, or temporary database-related objects that are not directly mapped as normal tables.
+
+Views
+    Classes mapped to SQL views.
+```
 
 ### User
 
@@ -216,17 +337,17 @@ Orders.UserId is a foreign key to Users.Id.
 
 When a user is deleted, the user's orders are deleted as well through cascade delete.
 
-## DTOs
+## WebApi Models
 
-DTOs are used to control what data enters and leaves the API.
+WebApi models are used to control what data enters and leaves the API.
 
-Request DTOs are used for input validation and API requests.
+Request models are used for API input.
 
-Response DTOs are used to control what data is returned from the API.
+Response models are used to control what data is returned from the API.
 
-Entities are not returned directly from controllers.
+BusinessObjects are not returned directly from controllers. Responses should be built through WebApi mappers.
 
-### User DTOs
+### User Models
 
 Examples:
 
@@ -251,24 +372,24 @@ If the user wants to change the password, both old password and new password mus
 
 If old password and new password are not provided, only profile fields are updated.
 
-### Auth DTOs
+### Auth Models
 
 Examples:
 
-- RegisterRequestDto
-- LoginRequestDto
-- AuthResponseDto
+- RegisterRequest
+- LoginRequest
+- AuthResponse
 
-Auth DTOs are used for registration, login, and returning JWT tokens after successful authentication.
+Auth models are used for registration, login, and returning JWT tokens after successful authentication.
 
 User registration is handled by AuthController, not UsersController.
 
-### Order DTOs
+### Order Models
 
 Examples:
 
-- OrderRequestDto
-- AdminOrderRequestDto
+- CreateOrderRequest
+- AdminCreateOrderRequest
 - UpdateOrderRequestDto
 - OrderResponseDto
 
@@ -302,6 +423,25 @@ Total is recalculated by the service whenever an order is created or updated.
 
 Repositories are responsible for database access.
 
+Repository interfaces are defined in:
+
+```text
+OrderManager.DataLayer/Interfaces
+```
+
+Repository implementations are defined in:
+
+```text
+OrderManager.DataLayer/Repositories
+```
+
+Repositories work with DataLayer BusinessObjects such as:
+
+```text
+User
+Order
+```
+
 Example responsibilities:
 
 - Get all users
@@ -320,13 +460,21 @@ Example responsibilities:
 
 Repositories use Entity Framework Core and AppDbContext.
 
-Repository interfaces are defined in the Core project.
-
-Repository implementations are defined in the DataLayer project.
-
 ## Services
 
-Services contain business logic.
+Services contain business logic and application workflow.
+
+Service interfaces are defined in:
+
+```text
+OrderManager.WebApi/Interfaces
+```
+
+Service implementations are defined in:
+
+```text
+OrderManager.WebApi/Services
+```
 
 Example responsibilities:
 
@@ -338,14 +486,20 @@ Example responsibilities:
 - Verify the old password before changing a user's password
 - Hash the new password before saving it
 - Call repositories
-- Map models to response DTOs
+- Map BusinessObjects to response models
 - Throw custom exceptions when something is invalid
 
 Controllers should stay thin, and business logic should stay in services.
 
 ## Mappers
 
-Mappers convert between models and DTOs.
+Mappers convert between WebApi models and DataLayer BusinessObjects.
+
+Mappers are located in:
+
+```text
+OrderManager.WebApi/Mappers
+```
 
 Examples:
 
@@ -353,16 +507,17 @@ Examples:
 User -> UserResponseDto
 User -> UpdateUserResponseDto
 Order -> OrderResponseDto
-CreateOrderCommand -> Order
-UpdateOrderRequestDto -> existing Order
+CreateOrderRequest -> Order
 UserRequestDto -> User
 ```
 
-This helps avoid exposing database entities directly through the API.
+This helps avoid exposing persistence objects directly through the API response shape.
 
-For create operations, mappers can create a new entity from a request DTO or command.
+For create operations, mappers can create a new BusinessObject from a request model.
 
-For update operations, the existing entity is loaded from the database first, and then updated with values from the request DTO.
+For update operations, the existing BusinessObject is loaded from the database first, and then updated with values from the request model.
+
+There are no DataLayer mappers in the current structure because the project no longer uses a separate Core model layer.
 
 ## Middleware
 
@@ -418,7 +573,7 @@ Example configuration values:
 - JWT issuer, audience, and secret key
 - Application-specific values
 
-Configuration is read in Program.cs.
+Configuration is read in Program.cs and services where needed.
 
 Example connection string section:
 
@@ -441,7 +596,7 @@ The application was originally using an InMemory database for learning purposes,
 EF Core is used for:
 
 - DbContext configuration
-- Entity mapping
+- BusinessObject mapping
 - Relationships
 - Foreign keys
 - Unique indexes
@@ -451,7 +606,17 @@ EF Core is used for:
 
 ### AppDbContext Configuration
 
-AppDbContext configures the database model using Fluent API.
+AppDbContext lives in:
+
+```text
+OrderManager.DataLayer/Context
+```
+
+EF Core configuration lives in:
+
+```text
+OrderManager.DataLayer/Configuration
+```
 
 Current configuration includes:
 
@@ -683,14 +848,18 @@ These tests help verify that routing, controllers, authentication, authorization
 This project demonstrates:
 
 - ASP.NET Core Web API basics
+- Company-style layered architecture
+- WebApi / Core / DataLayer project separation
+- DataLayer BusinessObjects for EF Core persistence
+- WebApi models for request/response shapes
 - Controller -> Service -> Repository pattern
 - Dependency Injection
-- DTO usage
-- DTO validation
+- API model usage
+- API validation
 - Entity Framework Core
 - SQL Server integration
 - EF Core migrations
-- DbContext configuration with Fluent API
+- DbContext configuration
 - One-to-many relationships
 - Foreign keys
 - Unique indexes
@@ -710,7 +879,7 @@ This project demonstrates:
 - Swagger JWT bearer token testing
 - Password update with old password verification
 - Integration testing
-- Clean separation of concerns
+- Separation of concerns
 - Async/await usage
 - CancellationToken usage
 - Basic production-style backend practices
