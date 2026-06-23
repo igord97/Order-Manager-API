@@ -2,7 +2,6 @@
 using OrderManager.WebApi.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace OrderManager.WebApi.Controllers;
 
@@ -12,10 +11,12 @@ namespace OrderManager.WebApi.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public OrdersController(IOrderService orderService)
+    public OrdersController(IOrderService orderService, ICurrentUserService currentUserService)
     {
         _orderService = orderService;
+        _currentUserService = currentUserService;
     }
 
     // -------------------------------------------------------------------
@@ -30,8 +31,7 @@ public class OrdersController : ControllerBase
         [FromBody] CreateMyOrderRequestDto createMyOrderRequestDto,
         CancellationToken ct)
     {
-        if (!TryGetCurrentUserId(out var userId))
-            return Unauthorized();
+        var userId = _currentUserService.UserId;
 
         var command = new CreateOrderCommandDto
         {
@@ -54,8 +54,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetMyOrders(CancellationToken ct)
     {
-        if (!TryGetCurrentUserId(out var userId))
-            return Unauthorized();
+        var userId = _currentUserService.UserId;
 
         var orders = await _orderService.GetOrdersByUserIdAsync(userId, ct);
 
@@ -71,8 +70,7 @@ public class OrdersController : ControllerBase
         int orderId,
         CancellationToken ct)
     {
-        if (!TryGetCurrentUserId(out var userId))
-            return Unauthorized();
+        var userId = _currentUserService.UserId;
 
         var order = await _orderService.GetOrderByIdAsync(orderId, ct);
 
@@ -96,8 +94,7 @@ public class OrdersController : ControllerBase
         [FromBody] UpdateOrderRequestDto orderRequestDto,
         CancellationToken ct)
     {
-        if (!TryGetCurrentUserId(out var userId))
-            return Unauthorized();
+        var userId = _currentUserService.UserId;
 
         var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
 
@@ -121,8 +118,7 @@ public class OrdersController : ControllerBase
         int orderId,
         CancellationToken ct)
     {
-        if (!TryGetCurrentUserId(out var userId))
-            return Unauthorized();
+        var userId = _currentUserService.UserId;
 
         var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
 
@@ -257,15 +253,5 @@ public class OrdersController : ControllerBase
             return NotFound();
 
         return NoContent();
-    }
-
-    // -------------------------------------------------------------------
-    // HELPER
-    // -------------------------------------------------------------------
-
-    private bool TryGetCurrentUserId(out int userId)
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return int.TryParse(userIdClaim, out userId);
     }
 }

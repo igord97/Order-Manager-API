@@ -14,6 +14,7 @@ public class UserService : IUserService
     private readonly PasswordHasher<User> _passwordHasher;
     private readonly ILogger<UserService> _logger;
 
+
     public UserService(IUserRepository userRepository, ILogger<UserService> logger)
     {
         _userRepository = userRepository;
