@@ -22,34 +22,6 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<UserResponseDto> CreateUserAsync(UserRequestDto userRequestDto, CancellationToken ct)
-    {
-        var normalizedEmail = userRequestDto.Email.Trim().ToLowerInvariant();
-        var normalizedName = userRequestDto.Name.Trim();
-
-        _logger.LogInformation("Trying to create user with email {Email} and name {Name}", normalizedEmail, normalizedName);
-
-        if (await _userRepository.EmailExistsAsync(normalizedEmail, ct))
-        {
-            _logger.LogWarning("User with email {Email} already exists", normalizedEmail);
-            throw new ConflictException("Email already exists");
-        }
-
-        var user = UserMapper.ToEntity(userRequestDto);
-        user.Email = normalizedEmail;
-        user.Name = normalizedName;
-
-        var createdUser = await _userRepository.AddAsync(user, ct);
-
-        _logger.LogInformation(
-            "User created successfully with id {UserId} and email {Email}",
-            createdUser.Id,
-            createdUser.Email
-        );
-
-        return UserMapper.ToResponseDto(createdUser);
-    }
-
     public async Task<List<UserResponseDto>> GetAllUsersAsync(CancellationToken ct)
     {
         _logger.LogInformation("Getting all users");
@@ -70,33 +42,6 @@ public class UserService : IUserService
         }
 
         return UserMapper.ToResponseDto(user);
-    }
-
-    public async Task<UserResponseDto> GetByEmailAsync(string email, CancellationToken ct)
-    {
-        var user = await _userRepository.GetByEmailAsync(email, ct);
-        if (user is null)
-        {
-            _logger.LogWarning("User with email {Email} was not found", email);
-            throw new NotFoundException("User not found");
-        }
-
-        return UserMapper.ToResponseDto(user);
-    }
-
-    public async Task<List<UserResponseDto>> GetByNameAsync(string userName, CancellationToken ct)
-    {
-        _logger.LogInformation("Trying to find user with name {UserName}", userName);
-
-        var users = await _userRepository.GetByNameAsync(userName, ct);
-
-        return users.Select(UserMapper.ToResponseDto).ToList();
-    }
-
-    public async Task<List<string>> GetAllNamesAsync(CancellationToken ct)
-    {
-        _logger.LogInformation("Trying to get all user names");
-        return await _userRepository.GetAllNamesAsync(ct);
     }
 
     public async Task<List<UserResponseDto>> SearchUsersAsync(string search, int page, int pageSize, CancellationToken ct)
