@@ -6,17 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace OrderManager.WebApi.Controllers;
 
 [Authorize]
-[ApiController]
-[Route("api/orders")]
-public class OrdersController : ControllerBase
+public class OrdersController : BaseController
 {
     private readonly IOrderService _orderService;
-    private readonly ICurrentUserService _currentUserService;
 
-    public OrdersController(IOrderService orderService, ICurrentUserService currentUserService)
+    public OrdersController(
+        IOrderService orderService)
     {
         _orderService = orderService;
-        _currentUserService = currentUserService;
     }
 
     // -------------------------------------------------------------------
@@ -31,11 +28,9 @@ public class OrdersController : ControllerBase
         [FromBody] CreateMyOrderRequestDto createMyOrderRequestDto,
         CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
         var command = new CreateOrderCommandDto
         {
-            UserId = userId,
+            UserId = CurrentUserId,
             Product = createMyOrderRequestDto.Product,
             Quantity = createMyOrderRequestDto.Quantity,
             Price = createMyOrderRequestDto.Price
@@ -54,9 +49,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetMyOrders(CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
-        var orders = await _orderService.GetOrdersByUserIdAsync(userId, ct);
+        var orders = await _orderService.GetOrdersByUserIdAsync(CurrentUserId, ct);
 
         return Ok(orders);
     }
@@ -70,14 +63,12 @@ public class OrdersController : ControllerBase
         int orderId,
         CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
         var order = await _orderService.GetOrderByIdAsync(orderId, ct);
 
         if (order == null)
             return NotFound();
 
-        if (order.UserId != userId)
+        if (order.UserId != CurrentUserId)
             return Forbid();
 
         return Ok(order);
@@ -94,14 +85,12 @@ public class OrdersController : ControllerBase
         [FromBody] UpdateOrderRequestDto orderRequestDto,
         CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
         var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
 
         if (existingOrder == null)
             return NotFound();
 
-        if (existingOrder.UserId != userId)
+        if (existingOrder.UserId != CurrentUserId)
             return Forbid();
 
         var updatedOrder = await _orderService.UpdateOrderAsync(orderId, orderRequestDto, ct);
@@ -118,14 +107,12 @@ public class OrdersController : ControllerBase
         int orderId,
         CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
         var existingOrder = await _orderService.GetOrderByIdAsync(orderId, ct);
 
         if (existingOrder == null)
             return NotFound();
 
-        if (existingOrder.UserId != userId)
+        if (existingOrder.UserId != CurrentUserId)
             return Forbid();
 
         var deleted = await _orderService.DeleteOrderAsync(orderId, ct);

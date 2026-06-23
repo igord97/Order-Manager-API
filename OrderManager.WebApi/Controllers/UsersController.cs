@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using OrderManager.WebApi.Models.User;
+﻿using OrderManager.WebApi.Models.User;
 using OrderManager.WebApi.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,17 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace OrderManager.WebApi.Controllers;
 
 [Authorize]
-[ApiController]
-[Route("api/users")]
-public class UsersController : ControllerBase
+public class UsersController : BaseController
 {
     private readonly IUserService _userService;
-    private readonly ICurrentUserService _currentUserService;
 
-    public UsersController(IUserService userService, ICurrentUserService currentUserService)
+    public UsersController(IUserService userService)
     {
         _userService = userService;
-        _currentUserService = currentUserService;
     }
 
     // -------------------------------------------------------------------
@@ -30,9 +25,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserResponseDto>> GetMe(CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
-        var user = await _userService.GetUserByIdAsync(userId, ct);
+        var user = await _userService.GetUserByIdAsync(CurrentUserId, ct);
 
         if (user == null)
             return NotFound();
@@ -49,9 +42,7 @@ public class UsersController : ControllerBase
         [FromBody] UpdateMyProfileRequestDto updateMyProfileRequestDto,
         CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-
-        var existingUser = await _userService.GetUserByIdAsync(userId, ct);
+        var existingUser = await _userService.GetUserByIdAsync(CurrentUserId, ct);
 
         if (existingUser == null)
             return NotFound();
@@ -62,7 +53,7 @@ public class UsersController : ControllerBase
         if (oldPasswordProvided != newPasswordProvided)
             return BadRequest("Both old password and new password must be provided to change password.");
 
-        var updatedUser = await _userService.UpdateMyProfileAsync(userId, updateMyProfileRequestDto, ct);
+        var updatedUser = await _userService.UpdateMyProfileAsync(CurrentUserId, updateMyProfileRequestDto, ct);
 
         if (updatedUser == null)
             return BadRequest("Old password is incorrect.");

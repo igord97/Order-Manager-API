@@ -22,6 +22,7 @@ public class ExceptionHandlingMiddleware
             context.Response.StatusCode = exception switch
             {
                 BadRequestException => StatusCodes.Status400BadRequest,
+                UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
                 NotFoundException => StatusCodes.Status404NotFound,
                 ConflictException => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError
@@ -30,6 +31,7 @@ public class ExceptionHandlingMiddleware
             var message = exception switch
             {
                 BadRequestException => exception.Message,
+                UnauthorizedAccessException => exception.Message,
                 NotFoundException => exception.Message,
                 ConflictException => exception.Message,
                 _ => "Internal server error"
