@@ -50,7 +50,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             ExpiresAtUtc = DateTime.UtcNow.AddMinutes(
-                int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "15"))
+                int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "1440"))
         };
     }
 
@@ -75,7 +75,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             ExpiresAtUtc = DateTime.UtcNow.AddMinutes(
-                int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "15"))
+                int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"] ?? "1440"))
         };
     }
 }
