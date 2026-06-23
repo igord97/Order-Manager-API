@@ -6,10 +6,6 @@ namespace OrderManager.DataLayer.BusinessObjects.Persistent.dbo;
 [Table("Users", Schema = "dbo")]
 public class User : BaseEntity
 {
-    [Key]
-    [Column("Id")]
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(50)]
     [Column("Name")]

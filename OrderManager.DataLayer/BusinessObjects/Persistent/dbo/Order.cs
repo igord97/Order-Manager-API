@@ -6,10 +6,6 @@ namespace OrderManager.DataLayer.BusinessObjects.Persistent.dbo;
 [Table("Orders", Schema = "dbo")]
 public class Order : BaseEntity
 {
-    [Key]
-    [Column("Id")]
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(100)]
     [Column("Product")]

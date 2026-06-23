@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OrderManager.WebApi.Models.Order;
 
-public class OrderRequestDto
+public class CreateMyOrderRequestDto
 {
     [Required]
     [DefaultValue("product")]

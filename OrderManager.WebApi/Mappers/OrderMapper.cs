@@ -5,7 +5,7 @@ namespace OrderManager.WebApi.Mappers;
 
 public static class OrderMapper
 {
-    public static Order ToEntity(CreateOrderRequest request)
+    public static Order ToEntity(CreateOrderCommandDto request)
     {
         return new Order
         {

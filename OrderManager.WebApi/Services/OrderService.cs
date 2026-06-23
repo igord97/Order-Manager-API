@@ -19,45 +19,45 @@ public class OrderService : IOrderService
         _logger = logger;
     }
 
-    public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderRequest createOrderCommand, CancellationToken ct)
+    public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderCommandDto createOrderCommandDto, CancellationToken ct)
     {
-        _logger.LogInformation("Creating order for user {UserId}", createOrderCommand.UserId);
+        _logger.LogInformation("Creating order for user {UserId}", createOrderCommandDto.UserId);
 
-        if (string.IsNullOrWhiteSpace(createOrderCommand.Product))
+        if (string.IsNullOrWhiteSpace(createOrderCommandDto.Product))
         {
             _logger.LogWarning("Product is required.");
             throw new BadRequestException("Product is required.");
         }
 
-        if (createOrderCommand.Quantity <= 0)
+        if (createOrderCommandDto.Quantity <= 0)
         {
             _logger.LogWarning(
                 "Order creation failed because quantity was invalid: {Quantity}",
-                createOrderCommand.Quantity);
+                createOrderCommandDto.Quantity);
 
             throw new BadRequestException("Quantity must be greater than zero.");
         }
 
-        if (createOrderCommand.Price <= 0)
+        if (createOrderCommandDto.Price <= 0)
         {
             _logger.LogWarning(
                 "Order creation failed because price was invalid: {Price}",
-                createOrderCommand.Price);
+                createOrderCommandDto.Price);
 
             throw new BadRequestException("Price must be greater than zero.");
         }
 
-        var user = await _userRepository.GetByIdAsync(createOrderCommand.UserId, ct);
+        var user = await _userRepository.GetByIdAsync(createOrderCommandDto.UserId, ct);
 
         if (user is null)
         {
-            _logger.LogWarning("User with id {UserId} was not found", createOrderCommand.UserId);
+            _logger.LogWarning("User with id {UserId} was not found", createOrderCommandDto.UserId);
             throw new BadRequestException("UserId must belong to an existing user.");
         }
 
-        var order = OrderMapper.ToEntity(createOrderCommand);
+        var order = OrderMapper.ToEntity(createOrderCommandDto);
 
-        order.Total = createOrderCommand.Quantity * createOrderCommand.Price;
+        order.Total = createOrderCommandDto.Quantity * createOrderCommandDto.Price;
 
         var createdOrder = await _orderRepository.AddAsync(order, ct);
 

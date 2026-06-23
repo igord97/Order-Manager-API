@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OrderManager.WebApi.Models.Order;
 
-public class AdminOrderRequestDto
+public class CreateOrderForUserRequestDto
 {
     [DefaultValue(1)]
     [Required]

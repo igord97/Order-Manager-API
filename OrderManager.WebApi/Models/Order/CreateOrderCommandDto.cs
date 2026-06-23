@@ -1,6 +1,6 @@
 ﻿namespace OrderManager.WebApi.Models.Order;
 
-public class CreateOrderRequest
+public class CreateOrderCommandDto
 {
     public int UserId { get; set; }
     public string Product { get; set; } = string.Empty;

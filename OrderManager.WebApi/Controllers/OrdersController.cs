@@ -8,7 +8,7 @@ namespace OrderManager.WebApi.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("orders")]
+[Route("api/orders")]
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
@@ -27,18 +27,18 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<OrderResponseDto>> CreateMyOrder(
-        [FromBody] OrderRequestDto orderRequestDto,
+        [FromBody] CreateMyOrderRequestDto createMyOrderRequestDto,
         CancellationToken ct)
     {
         if (!TryGetCurrentUserId(out var userId))
             return Unauthorized();
 
-        var command = new CreateOrderRequest
+        var command = new CreateOrderCommandDto
         {
             UserId = userId,
-            Product = orderRequestDto.Product,
-            Quantity = orderRequestDto.Quantity,
-            Price = orderRequestDto.Price
+            Product = createMyOrderRequestDto.Product,
+            Quantity = createMyOrderRequestDto.Quantity,
+            Price = createMyOrderRequestDto.Price
         };
 
         var createdOrder = await _orderService.CreateOrderAsync(command, ct);
@@ -151,15 +151,15 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<OrderResponseDto>> AdminCreateOrder(
-        [FromBody] AdminOrderRequestDto adminOrderRequestDto,
+        [FromBody] CreateOrderForUserRequestDto createOrderForUserDto,
         CancellationToken ct)
     {
-        var command = new CreateOrderRequest
+        var command = new CreateOrderCommandDto
         {
-            UserId = adminOrderRequestDto.UserId,
-            Product = adminOrderRequestDto.Product,
-            Quantity = adminOrderRequestDto.Quantity,
-            Price = adminOrderRequestDto.Price
+            UserId = createOrderForUserDto.UserId,
+            Product = createOrderForUserDto.Product,
+            Quantity = createOrderForUserDto.Quantity,
+            Price = createOrderForUserDto.Price
         };
 
         var createdOrder = await _orderService.CreateOrderAsync(command, ct);
