@@ -95,7 +95,7 @@ public class UserService : IUserService
         return UserMapper.ToUpdateResponseDto(updatedUser);
     }
 
-    public async Task<UpdateUserResponseDto?> UpdateMyProfileAsync(
+    public async Task<UpdateUserResponseDto> UpdateMyProfileAsync(
     int userId,
     UpdateMyProfileRequestDto request,
     CancellationToken ct)
@@ -103,7 +103,7 @@ public class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(userId, ct);
 
         if (user == null)
-            return null;
+            throw new NotFoundException("User not found");
 
         user.Name = request.Name;
         user.Email = request.Email;
@@ -122,7 +122,7 @@ public class UserService : IUserService
                 request.OldPassword!);
 
             if (passwordVerificationResult == PasswordVerificationResult.Failed)
-                return null;
+                throw new UnauthorizedAccessException("Old password is incorrect.");
 
             user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword!);
         }
